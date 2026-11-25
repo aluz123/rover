@@ -18,6 +18,6 @@ cp scripts/Info.plist "$APP/Contents/Info.plist"
 cp scripts/AppIcon.icns "$APP/Contents/Resources/"
 cp assets/MenuBar.png assets/MenuBar@2x.png "$APP/Contents/Resources/"
 # A stable signing identity lets macOS remember file access across rebuilds; fall back to ad-hoc.
-ID=$(security find-identity -p codesigning -v 2>/dev/null | grep -m1 -E "Apple Development|Developer ID Application" | awk '{print $2}')
+ID=$(security find-identity -p codesigning -v 2>/dev/null | grep -m1 -E "Apple Development|Developer ID Application" | awk '{print $2}' || true)
 codesign --force --sign "${ID:--}" --identifier com.alextowfigh.rover "$APP" >/dev/null 2>&1 || codesign --force --sign - "$APP"
 echo "built $APP"
