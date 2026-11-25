@@ -1,0 +1,15 @@
+.build/
+dist/
+*.app
+.DS_Store
+bench/results*.json
+launch/out/
+launch/music/*.mp3
+launch/music/*.npy
+docs/.vercel
+.vercel
+
+# launch materials stay private (playbook, outreach, video tooling); the demo home + Homebrew cask are public
+launch/*
+!launch/demo/
+!launch/homebrew/

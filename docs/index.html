@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rover — find any file the way you remember it</title>
+<meta name="description" content="Rover is a free, open-source file search for Mac. Press Option-Space, type like you talk, and your file is there in about 2 milliseconds. Built by Alex Towfigh. MIT License.">
+<meta property="og:title" content="Rover — find any file the way you remember it">
+<meta property="og:description" content="Free, open-source file search for Mac. ⌥ Space, type like you talk, found in 2 ms.">
+<meta property="og:image" content="https://getrover.dev/assets/og.png">
+<meta property="og:url" content="https://getrover.dev/">
+<meta name="twitter:image" content="https://getrover.dev/assets/og.png">
+<link rel="canonical" href="https://getrover.dev/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#07051a">
+<link rel="icon" href="assets/icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/rover.css">
+<style>
+  * { box-sizing: border-box; }
+  html { background: var(--night-0); scroll-behavior: smooth; overflow-x: clip; }
+  pre { max-width: 100%; }
+  body { margin: 0; color: var(--ink); font-family: var(--display); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    background: radial-gradient(1200px 700px at 50% -10%, #2a1f5c 0%, transparent 70%), linear-gradient(180deg, #0e0a2b 0%, #07051a 38%, #07051a 100%); }
+  a { color: inherit; }
+  #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .grain { position: fixed; inset: -50%; z-index: 1; pointer-events: none; opacity: .05; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  main, nav, footer { position: relative; z-index: 2; }
+  .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+  nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    background: linear-gradient(180deg, rgba(7, 5, 26, .72), rgba(7, 5, 26, .35)); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; height: 64px; gap: 28px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; letter-spacing: -.01em; text-decoration: none; }
+  .brand img { width: 30px; height: 30px; border-radius: 8px; }
+  .navlinks { display: flex; gap: 26px; margin-left: auto; font-size: 14px; color: var(--ink-2); }
+  .navlinks a { text-decoration: none; transition: color .2s; } .navlinks a:hover { color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 9px; height: 44px; padding: 0 20px; border-radius: 12px; font: 600 15px var(--display); text-decoration: none; letter-spacing: -.005em; transition: transform .2s, box-shadow .2s, background .2s; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { color: #1a0d05; background: linear-gradient(180deg, #ffa766, #ff8a3d 55%, #f07a2c); box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 10px 30px -8px rgba(255, 138, 61, .65), 0 0 0 1px rgba(255, 160, 100, .5); }
+  .btn-primary:hover { box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 16px 40px -8px rgba(255, 138, 61, .8), 0 0 0 1px rgba(255, 160, 100, .6); }
+  .btn-ghost { color: var(--ink); background: rgba(255, 255, 255, .05); box-shadow: 0 0 0 1px var(--line-2) inset; }
+  .btn-ghost:hover { background: rgba(255, 255, 255, .09); }
+  .btn-sm { height: 36px; padding: 0 14px; font-size: 13.5px; border-radius: 10px; }
+
+  /* hero */
+  .hero { padding: 72px 0 40px; text-align: center; }
+  .bot { width: 132px; height: 132px; margin: 0 auto 26px; filter: drop-shadow(0 18px 40px rgba(60, 242, 208, .18)); }
+  .bot svg { width: 100% !important; height: 100% !important; display: block; }
+  .pill { display: inline-flex; align-items: center; gap: 9px; padding: 6px 14px 6px 8px; border-radius: 99px; font-size: 13px; color: var(--ink-2); background: rgba(255, 255, 255, .04); box-shadow: 0 0 0 1px var(--line) inset; margin-bottom: 26px; }
+  .pill b { font: 400 10px var(--pixel); color: var(--night-0); background: var(--teal); padding: 3px 7px; border-radius: 99px; letter-spacing: .04em; }
+  h1 { font-size: clamp(46px, 7.4vw, 104px); line-height: .95; letter-spacing: -.045em; font-weight: 640; margin: 0 auto; max-width: 1000px; }
+  h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.02em; color: var(--orange-2);
+    background: linear-gradient(100deg, #ffd2ad, #ff8a3d 60%, #ffb27d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; padding-right: .06em; }
+  .lede { font-size: clamp(17px, 1.6vw, 20px); line-height: 1.55; color: var(--ink-2); max-width: 640px; margin: 26px auto 0; font-weight: 400; }
+  .keys { display: inline-flex; align-items: center; gap: 8px; vertical-align: -6px; margin: 0 4px; }
+  .key { display: inline-grid; place-items: center; min-width: 34px; height: 30px; padding: 0 9px; border-radius: 8px; font: 500 14px var(--ui); color: #fff;
+    background: linear-gradient(180deg, #3a3460, #241e48); box-shadow: 0 1px 0 rgba(255, 255, 255, .18) inset, 0 3px 0 #120d30, 0 4px 10px rgba(0, 0, 0, .4); }
+  .ctas { display: flex; gap: 12px; justify-content: center; margin-top: 34px; flex-wrap: wrap; }
+  .fine { margin-top: 16px; font-size: 13px; color: var(--ink-3); }
+  .fine span { margin: 0 8px; opacity: .5; }
+
+  .stage { position: relative; margin: 64px auto 0; width: min(1080px, 100%); }
+  .stage::before { content: ""; position: absolute; inset: -12% -8% -20%; z-index: -1; filter: blur(60px);
+    background: radial-gradient(40% 50% at 25% 40%, rgba(255, 138, 61, .32), transparent 70%), radial-gradient(45% 55% at 78% 55%, rgba(60, 242, 208, .22), transparent 70%), radial-gradient(50% 60% at 50% 30%, rgba(112, 90, 255, .3), transparent 70%); }
+  #demo { height: 500px; text-align: left; }
+  .tries { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+  .try { font: 500 13px var(--mono); color: var(--ink-2); background: rgba(255, 255, 255, .04); border: 1px solid var(--line); padding: 7px 12px; border-radius: 99px; cursor: pointer; transition: all .2s; }
+  .try:hover, .try.on { color: var(--ink); border-color: rgba(255, 138, 61, .55); background: rgba(255, 138, 61, .1); }
+  .try-label { font: 400 11px var(--pixel); color: var(--ink-4); align-self: center; margin-right: 6px; letter-spacing: .06em; }
+
+  /* sections */
+  section { padding: 120px 0 0; }
+  .eyebrow { font: 400 12px var(--pixel); letter-spacing: .12em; color: var(--teal); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--teal); box-shadow: 0 0 12px var(--teal); }
+  h2 { font-size: clamp(36px, 4.6vw, 64px); line-height: 1; letter-spacing: -.04em; font-weight: 630; margin: 0; max-width: 820px; }
+  .sub { font-size: 18px; line-height: 1.6; color: var(--ink-2); max-width: 600px; margin-top: 20px; }
+
+  .queries { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 48px; }
+  .q { padding: 20px 20px 18px; border-radius: 16px; background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015)); box-shadow: 0 0 0 1px var(--line) inset; transition: transform .3s, box-shadow .3s; }
+  .q:hover { transform: translateY(-3px); box-shadow: 0 0 0 1px var(--line-2) inset, 0 20px 40px -20px rgba(0, 0, 0, .6); }
+  .q-text { font: 500 16px var(--mono); color: var(--ink); letter-spacing: -.01em; }
+  .q-text::before { content: "⌥␣ "; color: var(--ink-4); font-size: 12px; }
+  .q-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 14px; min-height: 22px; }
+  .q-chips span { font: 600 11px var(--ui); padding: 3px 8px; border-radius: 99px; background: rgba(60, 242, 208, .1); color: var(--teal); border: 1px solid rgba(60, 242, 208, .22); }
+  .q-hit { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-2); font-family: var(--ui); }
+  .q-hit b { font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .q-note { font-size: 12px; color: var(--ink-4); margin-top: 6px; font-family: var(--ui); }
+
+  .films { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 44px; }
+  .film { margin: 0; }
+  .film video { width: 100%; aspect-ratio: 16/9; display: block; border-radius: 18px; background: #0b0820; box-shadow: 0 0 0 1px var(--line-2), 0 30px 80px -30px rgba(0, 0, 0, .8); }
+  .film figcaption { font-size: 14px; color: var(--ink-3); margin-top: 12px; }
+  @media (max-width: 900px) { .films { grid-template-columns: minmax(0, 1fr); } }
+  /* speed */
+  .speed { display: grid; grid-template-columns: 1.05fr 1fr; gap: 60px; align-items: center; margin-top: 10px; }
+  .big { font-size: clamp(110px, 15vw, 210px); font-weight: 680; letter-spacing: -.07em; line-height: .85; background: linear-gradient(180deg, #fff, #c9c3ec); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .big small { font-size: .32em; letter-spacing: -.03em; margin-left: .08em; -webkit-text-fill-color: var(--ink-3); }
+  .vs { font-size: 17px; color: var(--ink-2); margin-top: 18px; line-height: 1.55; }
+  .vs b { color: var(--ink); font-weight: 600; }
+  .bars { display: grid; gap: 22px; }
+  .bar-h { display: flex; justify-content: space-between; font-size: 14px; color: var(--ink-2); margin-bottom: 9px; }
+  .bar-h b { color: var(--ink); font-weight: 600; }
+  .bar { position: relative; height: 12px; border-radius: 99px; background: rgba(255, 255, 255, .06); overflow: hidden; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; width: 0; transition: width 1.4s cubic-bezier(.2, .8, .2, 1); }
+  .bar .r { background: linear-gradient(90deg, var(--orange), #ffb27d); box-shadow: 0 0 20px rgba(255, 138, 61, .55); }
+  .bar .s { background: rgba(201, 195, 236, .35); top: 0; }
+  .bar-legend { display: flex; gap: 18px; font-size: 12.5px; color: var(--ink-3); margin-top: 6px; }
+  .bar-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
+  .bar-legend .lr::before { background: var(--orange); } .bar-legend .ls::before { background: rgba(201, 195, 236, .45); }
+  .method { font-size: 13px; color: var(--ink-4); line-height: 1.6; margin-top: 28px; max-width: 520px; }
+  .method a { color: var(--ink-3); }
+
+  /* features */
+  .feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+  .feat { position: relative; padding: 26px; border-radius: 20px; min-height: 290px; overflow: hidden; display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .012)); box-shadow: 0 0 0 1px var(--line) inset; }
+  .feat h3 { font-size: 21px; letter-spacing: -.02em; margin: auto 0 8px; font-weight: 620; }
+  .feat p { font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 0; }
+  .feat .art { height: 132px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .feat.wide { grid-column: span 2; }
+  .mini-keys { display: flex; gap: 10px; }
+  .mini-keys .key { height: 54px; min-width: 64px; font-size: 18px; border-radius: 12px; }
+  .ask { width: 100%; max-width: 520px; font-family: var(--ui); }
+  .ask .me { margin-left: auto; width: fit-content; background: #0a84ff; color: #fff; padding: 8px 13px; border-radius: 16px 16px 4px 16px; font-size: 14px; }
+  .ask .plan { margin-top: 10px; background: rgba(255, 255, 255, .06); border: 1px solid var(--line-2); border-radius: 14px; padding: 12px 14px; font-size: 13px; color: var(--ink-2); }
+  .ask .plan b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 6px; font-size: 13.5px; }
+  .ask .plan .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .ask .plan .acts span { font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 8px; background: rgba(255, 255, 255, .08); color: var(--ink); }
+  .ask .plan .acts span:first-child { background: var(--orange); color: #1a0d05; }
+  .rule { font-family: var(--ui); font-size: 13.5px; line-height: 1.5; display: block; text-align: center; background: rgba(255, 255, 255, .05); border: 1px solid var(--line-2); padding: 11px 14px; border-radius: 12px; color: var(--ink-2); }
+  .rule b { color: var(--ink); font-weight: 600; }
+  .lock { filter: drop-shadow(0 10px 30px rgba(60, 242, 208, .3)); }
+
+  .junk { width: 100%; max-width: 520px; font-family: var(--ui); font-size: 13px; background: rgba(255,255,255,.05); border: 1px solid var(--line-2); border-radius: 14px; padding: 12px 14px; display: grid; gap: 7px; }
+  .junk .jh { display: flex; justify-content: space-between; align-items: baseline; } .junk .jh b { font-size: 14px; } .junk .jh span { font-size: 11.5px; color: var(--ink-3); }
+  .junk .jr { display: flex; gap: 9px; align-items: center; color: var(--ink-2); } .junk .jr i { font-style: normal; width: 18px; text-align: center; } .junk .jr span { margin-left: auto; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .junk .ja { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; } .junk .ja span { font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 8px; background: rgba(255,255,255,.08); } .junk .ja .t { background: #0a84ff; }
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 44px; }
+  .faq > * { min-width: 0; }
+  .qa { border-radius: 16px; background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012)); box-shadow: 0 0 0 1px var(--line) inset; padding: 18px 22px; }
+  .qa summary { cursor: pointer; font-size: 16.5px; font-weight: 600; letter-spacing: -.01em; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary::after { content: "+"; color: var(--teal); font: 400 18px var(--mono); }
+  .qa[open] summary::after { content: "–"; }
+  .qa p { margin: 12px 0 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+  @media (max-width: 900px) { .faq { grid-template-columns: minmax(0, 1fr); } }
+  /* meet */
+  .meet { display: grid; grid-template-columns: auto 1fr; gap: 64px; align-items: center; padding: 56px; border-radius: 28px; margin-top: 10px;
+    background: radial-gradient(70% 120% at 0% 50%, rgba(60, 242, 208, .12), transparent 60%), linear-gradient(135deg, rgba(42, 31, 92, .55), rgba(14, 10, 43, .55)); box-shadow: 0 0 0 1px var(--line) inset; }
+  .meet .bot { margin: 0; width: 220px; height: 220px; }
+
+  /* install */
+  .install > *, .feats > *, .queries > *, .speed > * { min-width: 0; }
+  .install { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+  .card { padding: 28px; border-radius: 20px; background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .012)); box-shadow: 0 0 0 1px var(--line) inset; }
+  .card h3 { margin: 0 0 16px; font-size: 20px; letter-spacing: -.02em; font-weight: 620; }
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; }
+  ol.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 12px; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+  ol.steps li::before { content: counter(s); width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font: 400 11px var(--pixel); color: var(--night-0); background: var(--orange); }
+  ol.steps b { color: var(--ink); font-weight: 600; }
+  pre { margin: 0; padding: 18px 20px; border-radius: 14px; background: rgba(0, 0, 0, .35); border: 1px solid var(--line); font: 13.5px/1.75 var(--mono); color: var(--ink-2); overflow-x: auto; }
+  pre .c { color: var(--ink-4); } pre .p { color: var(--teal); }
+  code { font-family: var(--mono); font-size: .92em; background: rgba(255, 255, 255, .07); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+
+  .final { text-align: center; padding: 160px 0 120px; }
+  .final h2 { margin: 0 auto; }
+  footer { border-top: 1px solid var(--line); padding: 34px 0 46px; color: var(--ink-3); font-size: 14px; }
+  footer .wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  footer a { text-decoration: none; } footer a:hover { color: var(--ink); }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.2, .8, .2, 1), transform .9s cubic-bezier(.2, .8, .2, 1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 900px) {
+    .navlinks a:not(.btn) { display: none; }
+    .queries, .feats, .install { grid-template-columns: minmax(0, 1fr); } .feat.wide { grid-column: auto; }
+    .speed, .meet { grid-template-columns: 1fr; gap: 36px; } .meet { padding: 32px; text-align: center; } .meet .bot { margin: 0 auto; width: 160px; height: 160px; }
+    #demo { height: 470px; } #demo .rv-pv { display: none; } #demo .rv-hint:nth-child(n+4) { display: none; }
+    .hero { padding-top: 48px; } section { padding-top: 90px; }
+  }
+  @media (max-width: 560px) { #demo .rv-hint { display: none; } #demo .rv-field { font-size: 18px; } #demo .rv-when { display: none; } .rv-num { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas><div class="grain"></div>
+
+<nav><div class="wrap">
+  <a class="brand" href="#"><img src="assets/icon-64.png" alt="">Rover</a>
+  <div class="navlinks">
+    <a href="#film">Films</a><a href="#how">How it works</a><a href="#speed">Benchmark</a><a href="#features">Features</a><a href="#faq">FAQ</a><a href="#install">Install</a>
+    <a class="btn btn-ghost btn-sm gh" href="#" data-repo>GitHub <span class="stars"></span></a>
+  </div>
+</div></nav>
+
+<main>
+<header class="hero"><div class="wrap">
+  <div class="bot" id="bot-hero"></div>
+  <div class="pill"><b>NEW</b>Free &amp; open source for macOS</div>
+  <h1>Find any file the way you <em>remember</em> it.</h1>
+  <p class="lede">Press <span class="keys"><span class="key">⌥</span><span class="key">Space</span></span>, type like you talk, and your file is there in about two milliseconds. Typos, dates, “that deck from last week”, all understood, all on your Mac.</p>
+  <div class="ctas">
+    <a class="btn btn-primary" href="#" data-download><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.3.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1.1-2.8-4.2zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 .1-2.3.7-3 1.5-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.4z"/></svg>Download for Mac</a>
+    <a class="btn btn-ghost" href="#" data-repo><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>Star on GitHub</a>
+  </div>
+  <div class="fine">macOS 13 or later<span>·</span>Apple silicon &amp; Intel<span>·</span>MIT License</div>
+
+  <div class="stage reveal"><div id="demo"></div></div>
+  <div class="tries"><span class="try-label">TRY</span></div>
+</div></header>
+
+<section id="film"><div class="wrap">
+  <div class="eyebrow reveal">THE FILMS</div>
+  <h2 class="reveal">See it in <em>forty seconds.</em></h2>
+  <div class="films">
+    <figure class="film reveal"><video controls playsinline preload="none" poster="assets/film-poster.jpg" src="assets/rover-hero.mp4"></video><figcaption>Rover · 0:40</figcaption></figure>
+    <figure class="film reveal"><video controls playsinline preload="none" poster="assets/tour-poster.jpg" src="assets/rover-tour.mp4"></video><figcaption>Rover in sixty seconds · 1:02</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="eyebrow reveal">TYPE LIKE YOU THINK</div>
+  <h2 class="reveal">You don’t remember file names. <em>Rover doesn’t need them.</em></h2>
+  <p class="sub reveal">Half-remembered words, a rough date, the folder it might be in. Rover reads what you mean, shows what it understood, and ranks your own documents above the clutter. No AI model, no internet: just a very fast index and a lot of care.</p>
+  <div class="queries" id="queries"></div>
+</div></section>
+
+<section id="speed"><div class="wrap">
+  <div class="eyebrow reveal">BENCHMARKED AGAINST SPOTLIGHT</div>
+  <div class="speed">
+    <div class="reveal">
+      <div class="big">2.4<small>ms</small></div>
+      <p class="vs">Median search time across 225,066 files, versus <b>242 ms</b> for Spotlight. About a hundred times faster, and it finds the right file far more often.</p>
+      <p class="method">Measured on one Mac with 465 queries generated from 80 random documents, the kind of words people actually type: a word from the name, a typo, “last month”, “in downloads”. Spotlight was measured through <code>mdfind</code>. <a href="#" data-repo-path="/blob/main/README.md#benchmark-vs-spotlight">Method, caveats and script →</a></p>
+    </div>
+    <div class="bars reveal" id="bars"></div>
+  </div>
+</div></section>
+
+<section id="features"><div class="wrap">
+  <div class="eyebrow reveal">EVERYTHING AFTER FINDING IT</div>
+  <h2 class="reveal">Look, move, tidy. <em>Without opening Finder.</em></h2>
+  <div class="feats">
+    <div class="feat reveal"><div class="art"><div class="mini-keys"><span class="key" style="min-width:150px">space</span></div></div>
+      <h3>Quick Look, like Finder</h3><p>Point at any result and press Space. Arrow keys flip through results while the preview follows.</p></div>
+    <div class="feat reveal"><div class="art"><div class="mini-keys"><span class="key">⌘</span><span class="key">M</span></div></div>
+      <h3>Move it anywhere</h3><p>Type a folder name and hit return. Every move, rename and trash can be undone with ⌘Z.</p></div>
+    <div class="feat reveal"><div class="art"><div class="mini-keys"><span class="key">⌘</span><span class="key">↩</span></div></div>
+      <h3>Show in Finder</h3><p>Opens the folder with the file selected, so you always know where things live.</p></div>
+    <div class="feat wide reveal"><div class="art"><div class="ask"><div class="me">put last month’s invoices in Documents/Invoices</div>
+        <div class="plan"><b>Move 3 files to ~/Documents/Invoices</b>Invoice-2026-1042.pdf · Invoice — Figma annual.pdf · Invoice-2026-1038.pdf<div class="acts"><span>Do it ⌘↩</span><span>Don’t</span></div></div></div></div>
+      <h3>Ask Rover <span style="font-weight:400;color:var(--ink-3)">— press ⇥ Tab</span></h3><p>Ask in plain words and Rover proposes a plan you approve with one key. It runs on your existing Claude Code login, so there’s no API key to paste. Rover never deletes; it only moves to the Trash, and everything can be undone.</p></div>
+    <div class="feat wide reveal"><div class="art"><div class="junk">
+        <div class="jh"><b>You could free up 31 GB</b><span>Nothing moves until you choose</span></div>
+        <div class="jr"><i>📦</i>Old installers<span>28 · 3.2 GB</span></div>
+        <div class="jr"><i>🎞</i>Old videos and screen recordings<span>53 · 22.4 GB</span></div>
+        <div class="jr"><i>🧩</i>Apps you haven’t opened in 6 months<span>6 · 1.8 GB</span></div>
+        <div class="ja"><span>Move to Backup Drive</span><span class="t">Move to Trash</span></div></div></div>
+      <h3>Free up space</h3><p>Rover finds what’s eating your disk and hasn’t been touched in ages: old installers, forgotten videos, duplicate copies, apps you never open, stale downloads. Send them to the Trash or to a backup drive (each copy is checked before the original goes). Nothing is ever deleted outright, and ⌘Z undoes it.</p></div>
+    <div class="feat reveal"><div class="art"><div class="rule">New <b>invoice PDFs</b> in Downloads → <b>Documents/Invoices</b></div></div>
+      <h3>Automations</h3><p>Small rules that keep folders tidy while you work. Existing files are left alone.</p></div>
+    <div class="feat reveal"><div class="art"><svg class="lock" width="84" height="96" viewBox="0 0 14 16" shape-rendering="crispEdges"><path fill="#1A1430" d="M3 1h8v1h1v5h1v8H1V7h1V2h1z"/><path fill="#5C5578" d="M4 2h6v1h1v4H9V4H5v3H3V3h1z"/><path fill="#FF8A3D" d="M2 7h10v7H2z"/><path fill="#FFC291" d="M2 7h10v1H2z"/><path fill="#C85A26" d="M2 13h10v1H2z"/><path fill="#3CF2D0" d="M6 9h2v1h1v1H8v2H6v-2H5v-1h1z"/></svg></div>
+      <h3>Private by design</h3><p>The index lives on your Mac and reads names only. Nothing is uploaded unless you ask the assistant something.</p></div>
+    <div class="feat reveal"><div class="art"><div class="mini-keys"><span class="key">↩</span></div></div>
+      <h3>It learns</h3><p>Files you open, and the words you used to find them, float to the top next time.</p></div>
+    <div class="feat reveal"><div class="art"><pre style="font-size:12.5px;padding:12px 16px"><span class="p">$</span> rover invoice last month</pre></div>
+      <h3>A real CLI, too</h3><p>The same engine in your terminal: search, move, undo, rules. Scriptable and fast.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="meet reveal">
+    <div class="bot" id="bot-meet"></div>
+    <div>
+      <div class="eyebrow">MEET ROVER</div>
+      <h2>A little robot that <em>fetches</em> your files.</h2>
+      <p class="sub">It lives in your menu bar, keeps an eye on every folder as files arrive, and wakes up the moment you press ⌥ Space. One magnifying-glass eye for finding things; the other one winks.</p>
+    </div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="eyebrow reveal">QUESTIONS</div>
+  <h2 class="reveal">Good questions, <em>straight answers.</em></h2>
+  <div class="faq">
+      <details class="qa reveal"><summary>Why does Rover ask for Full Disk Access?</summary><p>macOS hides folders like Documents, Desktop and Downloads from apps until you allow it. Rover reads file names (not contents) to build its index. You can also allow just Desktop, Documents and Downloads instead.</p></details>
+      <details class="qa reveal"><summary>Does anything leave my Mac?</summary><p>No. The index lives on your Mac and holds names, dates and sizes only. The one exception is the optional assistant (⇥ Tab), which sends your question and file names to Claude only when you ask it something.</p></details>
+      <details class="qa reveal"><summary>Is there AI in the search?</summary><p>No. Search is a fast index plus a plain-English parser, a hand-made synonym list and a ranking function, all in Swift with no dependencies. That is why it takes about 2 ms and works offline.</p></details>
+      <details class="qa reveal"><summary>How is it different from Spotlight, Raycast or Alfred?</summary><p>Spotlight finds files if you remember their name. Raycast and Alfred are launchers that use Spotlight&#x27;s file search. Rover keeps its own index and understands how people actually remember files: typos, “last summer”, “in downloads”, “the short version”. In our benchmark it found the right file 95% of the time, versus 58% for Spotlight.</p></details>
+      <details class="qa reveal"><summary>Why does macOS warn me the first time I open it?</summary><p>Rover isn&#x27;t notarized by Apple yet. Open System Settings → Privacy &amp; Security and click Open Anyway, or build it from source with one command.</p></details>
+      <details class="qa reveal"><summary>Will Free Up Space delete my files?</summary><p>Never permanently. It only suggests; you choose. Files go to the Trash, or to a backup drive with the original sent to the Trash after the copy is checked, and ⌘Z puts everything back. It never suggests iCloud files, code projects or Apple&#x27;s apps.</p></details>
+      <details class="qa reveal"><summary>Does it slow my Mac down?</summary><p>It indexes about 225,000 files in about 2 seconds at launch, then follows changes live. At rest it uses close to 0% CPU and about 30 MB of memory.</p></details>
+      <details class="qa reveal"><summary>How do I uninstall it?</summary><p>Quit Rover from its menu, drag it from Applications to the Trash, and delete ~/Library/Application Support/Rover.</p></details>
+  </div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <div class="eyebrow reveal">INSTALL</div>
+  <h2 class="reveal">Up and running in <em>a minute.</em></h2>
+  <div class="install">
+    <div class="card reveal"><h3>Download</h3><ol class="steps">
+      <li><span><a href="#" data-download><b>Download Rover</b></a>, unzip it and drag Rover into Applications.</span></li>
+      <li><span>Open it. Rover isn’t notarized by Apple yet, so the first time macOS will stop it: go to <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>.</span></li>
+      <li><span>Rover shows a one-click setup for file access, then indexes your Mac in a few seconds. Press <b>⌥ Space</b>.</span></li>
+    </ol></div>
+    <div class="card reveal"><h3>Or build it yourself</h3>
+      <pre><span class="c"># needs only the Xcode Command Line Tools</span>
+<span class="p">$</span> git clone <span data-repo-text>https://github.com/…/rover</span>
+<span class="p">$</span> cd rover &amp;&amp; ./scripts/build.sh
+<span class="p">$</span> open dist/Rover.app</pre>
+      <p style="color:var(--ink-3);font-size:14px;line-height:1.6;margin:16px 0 0">Plain Swift, no dependencies, about 5,000 lines. Read it, change it, ship your own. MIT licensed.</p></div>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap">
+  <div class="bot reveal" id="bot-final" style="width:96px;height:96px"></div>
+  <h2 class="reveal">Stop searching. <em>Start finding.</em></h2>
+  <div class="ctas reveal"><a class="btn btn-primary" href="#" data-download>Download for Mac</a><a class="btn btn-ghost" href="#" data-repo>View the source</a></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <a class="brand" href="#"><img src="assets/icon-64.png" alt="" style="width:24px;height:24px;border-radius:6px">Rover</a>
+  <span>Built by Alex Towfigh · MIT License</span>
+  <span style="margin-left:auto;display:flex;gap:20px"><a href="#" data-repo>GitHub</a><a href="#" data-repo-path="/releases">Releases</a><a href="#" data-repo-path="/issues">Report a miss</a></span>
+</div></footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/bot.js"></script>
+<script>
+const REPO = "https://github.com/aluz123/rover";
+const ZIP = REPO + "/releases/latest/download/Rover.zip";
+document.querySelectorAll("[data-repo]").forEach(a => a.href = REPO);
+document.querySelectorAll("[data-repo-path]").forEach(a => a.href = REPO + a.dataset.repoPath);
+document.querySelectorAll("[data-download]").forEach(a => a.href = ZIP);
+document.querySelectorAll("[data-repo-text]").forEach(s => s.textContent = REPO);
+fetch("https://api.github.com/repos/" + REPO.split("github.com/")[1]).then(r => r.ok ? r.json() : null).then(j => {
+  if (j && j.stargazers_count > 0) document.querySelectorAll(".stars").forEach(s => s.textContent = "★ " + j.stargazers_count.toLocaleString());
+}).catch(() => {});
+
+// ---------- night sky: pixel stars that twinkle ----------
+(() => {
+  const c = document.getElementById("sky"), x = c.getContext("2d");
+  let W, H, stars = [];
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  function size() {
+    W = c.width = innerWidth * dpr; H = c.height = innerHeight * dpr; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+    stars = Array.from({ length: Math.round(innerWidth * innerHeight / 9000) }, () => ({ x: Math.random() * W, y: Math.random() * H, s: (Math.random() < .12 ? 3 : 2) * dpr, p: Math.random() * 6.28, v: .4 + Math.random() * 1.2, c: Math.random() < .2 ? "#3cf2d0" : Math.random() < .5 ? "#8fa2ff" : "#ffffff" }));
+  }
+  size(); addEventListener("resize", size);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function draw(t) {
+    x.clearRect(0, 0, W, H);
+    for (const s of stars) { x.globalAlpha = .15 + .55 * (0.5 + 0.5 * Math.sin(s.p + t * .001 * s.v)); x.fillStyle = s.c; x.fillRect(s.x | 0, s.y | 0, s.s, s.s); }
+    if (!still) requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ---------- robots ----------
+(() => {
+  const spots = [["bot-hero", 132], ["bot-meet", 220], ["bot-final", 96]];
+  function frame(t) {
+    const wink = (t % 4200) > 3950 ? 1 : 0, beacon = (Math.sin(t / 380) > 0) ? 1 : 0, scan = ((t / 2200) % 1);
+    for (const [id, sz] of spots) { const el = document.getElementById(id); if (el) el.innerHTML = RoverBot.robot({ px: 10, size: sz, wink, beacon, scan }); }
+  }
+  let last = 0;
+  (function loop(t) { if (t - last > 90) { frame(t); last = t; } requestAnimationFrame(loop); })(0);
+})();
+
+// ---------- the live demo: real Rover results on a demo home folder ----------
+(() => {
+  const D = window.ROVER_DATA, panel = new RoverUI.Panel(document.getElementById("demo"));
+  const reel = ["latest pitch deck short", "lese agreemnt", "photos from last summer", "invoice from last month", "big videos", "stuff i downloaded this morning"];
+  const tries = document.querySelector(".tries");
+  // the nearest prefix we have real results for (we captured results as the query is typed)
+  const resultFor = q => { let k = q; while (k && !D[k]) k = k.slice(0, -1).trimEnd(); return D[k] || null; };
+  let token = 0;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  async function play(q, my) {
+    for (let i = 0; i <= q.length; i++) {
+      if (my !== token) return;
+      panel.type(q.slice(0, i)); panel.show(resultFor(q.slice(0, i).trimEnd()));
+      await sleep(i === 0 ? 300 : 55 + Math.random() * 45);
+    }
+    panel.show(D[q]);
+    for (let s = 1; s < Math.min(3, D[q].hits.length); s++) { await sleep(900); if (my !== token) return; panel.select(s); }
+    await sleep(900); if (my !== token) return; panel.select(0);
+    await sleep(1400);
+  }
+  async function loop(start) {
+    const my = ++token; let i = start;
+    while (my === token) {
+      tries.querySelectorAll(".try").forEach((b, j) => b.classList.toggle("on", j === i % reel.length));
+      await play(reel[i % reel.length], my); i++;
+    }
+  }
+  reel.forEach((q, i) => { const b = document.createElement("button"); b.className = "try"; b.textContent = q; b.onclick = () => loop(i); tries.appendChild(b); });
+  panel.show(null); loop(0);
+
+  // query cards
+  const cards = [
+    ["latest pitch deck short", "“latest” sorts newest first; “short” prefers short versions without requiring the word."],
+    ["lese agreemnt", "Two typos, still found."],
+    ["photos from last summer", "Kinds and seasons become filters."],
+    ["can you find the deck i made a couple weeks ago", "Chatty words are dropped; number words become dates."],
+    ["contracts before 2025", "“contract” also matches agreements."],
+    ["stuff i downloaded this morning", "“downloaded” means your Downloads folder."],
+  ];
+  document.getElementById("queries").innerHTML = cards.map(([q, note]) => {
+    const r = D[q], h = r.hits[0];
+    return `<div class="q reveal"><div class="q-text">${RoverUI.esc(q)}</div><div class="q-chips">${r.chips.map(c => `<span>${RoverUI.esc(c)}</span>`).join("")}</div>
+      <div class="q-hit">${RoverUI.fileIcon(h, 26)}<b>${RoverUI.esc(h.name)}</b></div><div class="q-note">${note}</div></div>`;
+  }).join("");
+
+  // benchmark bars (docs & media sample)
+  const rows = [["Right file found at all", 95, 58], ["…when you make a typo", 92, 2], ["…with “in downloads”-style words", 88, 2], ["…with dates like “last month”", 99, 14], ["Right file in the top 5", 47, 8]];
+  document.getElementById("bars").innerHTML = rows.map(([l, r, s]) => `<div><div class="bar-h"><span>${l}</span><span><b>${r}%</b> vs ${s}%</span></div>
+    <div class="bar"><i class="s" data-w="${s}"></i></div><div class="bar" style="margin-top:6px"><i class="r" data-w="${r}"></i></div></div>`).join("")
+    + `<div class="bar-legend"><span class="lr">Rover</span><span class="ls">Spotlight</span></div>`;
+})();
+
+// ---------- reveal on scroll ----------
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in");
+  e.target.querySelectorAll?.(".bar i").forEach(i => i.style.width = i.dataset.w + "%");
+  io.unobserve(e.target);
+}), { threshold: .15 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

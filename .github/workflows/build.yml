@@ -1,0 +1,11 @@
+name: build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Rover.app
+        run: ./scripts/build.sh
+      - name: Plain-English query checks (demo home, no windows)
+        run: python3 bench/phrases.py

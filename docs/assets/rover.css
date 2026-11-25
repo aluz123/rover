@@ -1,0 +1,88 @@
+/* Rover — Copyright (c) 2026 Alex Towfigh. MIT License. Shared by the website and the launch films. */
+:root {
+  --night-0: #07051a; --night-1: #0e0a2b; --night-2: #1b1452; --night-3: #2a1f5c;
+  --ink: #f4f1ff; --ink-2: #c9c3ec; --ink-3: #8f88b8; --ink-4: #5d5788;
+  --orange: #ff8a3d; --orange-2: #ffc291; --ember: #c85a26; --teal: #3cf2d0; --teal-2: #1fbfa4; --star: #8fa2ff;
+  --line: rgba(196, 186, 255, .12); --line-2: rgba(196, 186, 255, .2);
+  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Geist", "Inter", system-ui, sans-serif;
+  --display: "Geist", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --serif: "Instrument Serif", "New York", Georgia, serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --pixel: "Silkscreen", "Geist Mono", monospace;
+}
+
+/* ---------- the panel replica ---------- */
+.rv-panel {
+  --pbg: rgba(30, 27, 44, .78); --prow: #0a84ff;
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  font-family: var(--ui); color: #f2f2f7; -webkit-font-smoothing: antialiased;
+  background: linear-gradient(180deg, rgba(48, 44, 66, .82), rgba(28, 25, 40, .86));
+  backdrop-filter: blur(40px) saturate(1.6); -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  border-radius: 18px; border: 1px solid rgba(255, 255, 255, .13);
+  box-shadow: 0 0 0 .5px rgba(0, 0, 0, .6), 0 40px 120px -20px rgba(0, 0, 0, .75), 0 18px 40px -10px rgba(10, 5, 40, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+.rv-head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 12px; }
+.rv-glass { color: rgba(235, 235, 245, .55); flex: none; }
+.rv-badge { display: none; font-size: 11px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 99px; background: rgba(10, 132, 255, .2); color: #5eb0ff; }
+.rv-field { position: relative; flex: 1; font-size: 23px; font-weight: 400; letter-spacing: -.01em; height: 30px; display: flex; align-items: center; white-space: pre; }
+.rv-ph { position: absolute; left: 0; color: rgba(235, 235, 245, .3); }
+.rv-caret { width: 2px; height: 26px; background: #0a84ff; margin-left: 1px; border-radius: 1px; }
+.rv-chips { display: none; gap: 6px; padding: 0 20px 10px; }
+.rv-chips.on { display: flex; }
+.rv-chip { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 99px; background: rgba(10, 132, 255, .16); color: #6cb6ff; border: 1px solid rgba(10, 132, 255, .25); white-space: nowrap; }
+.rv-body { display: flex; flex: 1; min-height: 0; border-top: 1px solid rgba(255, 255, 255, .07); border-bottom: 1px solid rgba(255, 255, 255, .07); }
+.rv-list { flex: 1; padding: 6px 8px; overflow: hidden; min-width: 0; }
+.rv-row { display: flex; align-items: center; gap: 11px; padding: 7px 10px; border-radius: 9px; height: 48px; box-sizing: border-box; transition: background .12s; }
+.rv-row svg { flex: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
+.rv-row.sel { background: var(--prow); }
+.rv-rt { flex: 1; min-width: 0; }
+.rv-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rv-path { font-size: 11.5px; color: rgba(235, 235, 245, .5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.rv-row.sel .rv-path, .rv-row.sel .rv-when { color: rgba(255, 255, 255, .78); }
+.rv-when { font-size: 11.5px; color: rgba(235, 235, 245, .45); white-space: nowrap; }
+.rv-num { font: 600 10.5px var(--ui); color: rgba(235, 235, 245, .35); background: none; border: 0; }
+.rv-row.sel .rv-num { color: rgba(255, 255, 255, .7); }
+.rv-empty, .rv-pv-empty { color: rgba(235, 235, 245, .35); font-size: 13px; padding: 40px; text-align: center; }
+.rv-pv { width: 38%; flex: none; border-left: 1px solid rgba(255, 255, 255, .07); display: flex; flex-direction: column; padding: 18px; gap: 16px; box-sizing: border-box; overflow: hidden; }
+.rv-art { flex: 1; min-height: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.rv-pv-meta { flex: none; }
+.rv-pv-name { font-size: 14px; font-weight: 600; margin-bottom: 10px; line-height: 1.25; word-break: break-word; }
+.rv-pv-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11.5px; padding: 3px 0; }
+.rv-pv-row span { color: rgba(235, 235, 245, .45); }
+.rv-pv-row b { font-weight: 500; color: rgba(235, 235, 245, .85); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rv-foot { display: flex; align-items: center; gap: 14px; padding: 9px 18px; font-size: 11.5px; color: rgba(235, 235, 245, .45); white-space: nowrap; }
+.rv-sp { flex: 1; }
+.rv-hint kbd { font: 600 10.5px var(--ui); color: rgba(235, 235, 245, .7); background: rgba(255, 255, 255, .09); border: 1px solid rgba(255, 255, 255, .08); border-radius: 5px; padding: 1px 5px; margin-right: 5px; }
+
+/* previews (drawn) */
+.rv-art-slide { background: #0d0d14; }
+.rv-slide { width: 88%; aspect-ratio: 16/10; border-radius: 6px; padding: 8%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center;
+  background: radial-gradient(120% 90% at 85% 10%, #ff8a3d55, transparent 55%), radial-gradient(90% 80% at 0% 100%, #3cf2d044, transparent 60%), linear-gradient(135deg, #1b1452, #0b0820); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.rv-slide-k { font: 700 9px var(--ui); letter-spacing: .25em; color: var(--orange); margin-bottom: 8px; }
+.rv-slide-t { font: 600 clamp(12px, 1.5vw, 19px)/1.15 var(--ui); color: #fff; letter-spacing: -.01em; }
+.rv-slide-b { display: flex; gap: 5px; margin-top: 12px; }
+.rv-slide-b span { height: 4px; width: 22%; border-radius: 2px; background: rgba(255, 255, 255, .25); }
+.rv-slide-b span:first-child { background: var(--teal); }
+.rv-art-doc { background: rgba(0, 0, 0, .25); }
+.rv-page { width: 62%; aspect-ratio: 8.5/11; background: #fbfbfd; border-radius: 3px; padding: 9% 9%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6%; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.rv-page b { height: 7%; width: 55%; background: #22223a; border-radius: 2px; margin-bottom: 4%; }
+.rv-page i { height: 2.4%; background: #c9cad6; border-radius: 2px; display: block; }
+.rv-sheet { width: 80%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; background: #fff; padding: 6px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.rv-sheet i { height: 12px; background: #dff3e6; border-radius: 1px; }
+.rv-art-photo { background: linear-gradient(180deg, hsl(calc(var(--h) + 20) 80% 72%), hsl(var(--h) 70% 55%) 60%, hsl(calc(var(--h) - 30) 60% 35%)); }
+.rv-sun { position: absolute; width: 22%; aspect-ratio: 1; border-radius: 50%; background: #fff3d6; top: 18%; right: 20%; box-shadow: 0 0 40px #fff3d6; }
+.rv-hill { position: absolute; left: -10%; right: -10%; border-radius: 50% 50% 0 0; }
+.rv-hill.a { bottom: -18%; height: 55%; background: hsl(calc(var(--h) - 40) 45% 30%); }
+.rv-hill.b { bottom: -30%; height: 50%; left: 30%; background: hsl(calc(var(--h) - 60) 40% 22%); }
+.rv-roofs { position: absolute; bottom: 14%; left: 10%; width: 40%; height: 14%; background: repeating-linear-gradient(90deg, #f0e2cf 0 14%, #e07a4a 14% 16%, #f7ead8 16% 30%); clip-path: polygon(0 40%, 10% 0, 20% 40%, 30% 10%, 45% 40%, 60% 5%, 75% 40%, 90% 15%, 100% 40%, 100% 100%, 0 100%); opacity: .9; }
+.rv-art-shot { background: #1c1c26; }
+.rv-shot { width: 84%; aspect-ratio: 16/10; border-radius: 6px; background: #2a2a38; display: grid; grid-template-columns: 1fr 2fr; grid-template-rows: 14px 1fr 1fr; gap: 6px; padding: 8px; box-sizing: border-box; }
+.rv-shot i { background: #3a3a4c; border-radius: 3px; grid-column: 1 / -1; }
+.rv-shot i:nth-child(2), .rv-shot i:nth-child(3) { grid-column: auto; }
+.rv-shot b { display: none; }
+.rv-art-video { background: linear-gradient(135deg, #191428, #0b0a12); }
+.rv-play { width: 54px; height: 54px; border-radius: 50%; background: rgba(255, 255, 255, .14); backdrop-filter: blur(6px); position: relative; }
+.rv-play::after { content: ""; position: absolute; left: 21px; top: 16px; border-left: 18px solid #fff; border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+.rv-scrub { position: absolute; bottom: 14px; left: 14px; right: 14px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .18); }
+.rv-scrub span { display: block; width: 36%; height: 100%; background: #fff; border-radius: 2px; }
+.rv-art-folder { background: rgba(0, 0, 0, .18); }
