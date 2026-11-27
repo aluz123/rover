@@ -148,10 +148,14 @@ struct RowMenu: View {
             Button("Show in Finder") { model.select(index); model.reveal() }
             Button("Quick Look") { model.select(index); model.quickLook() }
             Divider()
+            Group {
             Button("Move to…") { model.select(index); model.startMove() }
             Button("Rename…") { model.select(index); model.startRename() }
             Button("Copy") { model.select(index); model.copyFiles() }
             Button("Copy Path") { model.select(index); model.copyPath() }
+            Button("Send…  ⌘S" + (License.isPro ? "" : "  (Pro)")) { model.select(index); model.sendSelected() }
+            Button(model.hits.indices.contains(index) && Pins.contains(model.hits[index].path) ? "Unpin  ⌘D" : "Pin  ⌘D" + (License.isPro ? "" : "  (Pro)")) { model.select(index); model.togglePin() }
+            }
             Divider()
             Button("Move to Trash") { model.select(index); model.trash() }
         }
@@ -181,12 +185,13 @@ struct Hint: View {
 }
 
 enum Fmt {
-    static let home = NSHomeDirectory()
-    static let icloud = NSHomeDirectory() + "/Library/Mobile Documents/com~apple~CloudDocs"
+    static let home = ProcessInfo.processInfo.environment["ROVER_DEMO_HOME"] ?? NSHomeDirectory()   // demo footage: the fake home reads as ~
+    static let icloud = home + "/Library/Mobile Documents/com~apple~CloudDocs"
     static func folder(_ path: String) -> String {
         var p = (path as NSString).deletingLastPathComponent
         if p.hasPrefix(icloud) { p = "iCloud Drive" + p.dropFirst(icloud.count) }
         else if p.hasPrefix(home) { p = "~" + p.dropFirst(home.count) }
+        else if home.hasPrefix("/private/"), p.hasPrefix(String(home.dropFirst(8))) { p = "~" + p.dropFirst(home.count - 8) }
         return p
     }
     static let rel: RelativeDateTimeFormatter = { let f = RelativeDateTimeFormatter(); f.unitsStyle = .short; return f }()
@@ -224,6 +229,15 @@ struct Row: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(hit.path == Paths.icloudRoot ? "iCloud Drive" : (hit.kind == .app && hit.name.hasSuffix(".app") ? String(hit.name.dropLast(4)) : hit.name)).font(.system(size: 13.5, weight: .medium)).lineLimit(1).truncationMode(.middle)
+                    if License.isPro && Pins.contains(hit.path) {
+                        Image(systemName: "pin.fill").font(.system(size: 9.5)).foregroundColor(selected ? .white : .orange)
+                    }
+                    if hit.source == .image || hit.source == .drive {
+                        Text(hit.why).font(.system(size: 9.5, weight: .semibold)).lineLimit(1)
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(Capsule().fill((hit.source == .image ? Color.teal : Color.purple).opacity(selected ? 0.35 : 0.18)))
+                            .foregroundColor(selected ? .white : (hit.source == .image ? .teal : .purple))
+                    }
                     if hit.source == .content {
                         Text("in contents").font(.system(size: 9.5, weight: .semibold))
                             .padding(.horizontal, 5).padding(.vertical, 1)

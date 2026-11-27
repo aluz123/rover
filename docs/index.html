@@ -191,7 +191,7 @@
 <nav><div class="wrap">
   <a class="brand" href="#"><img src="assets/icon-64.png" alt="">Rover</a>
   <div class="navlinks">
-    <a href="#film">Films</a><a href="#how">How it works</a><a href="#speed">Benchmark</a><a href="#features">Features</a><a href="#faq">FAQ</a><a href="#install">Install</a>
+    <a href="#film">Films</a><a href="#how">How it works</a><a href="#speed">Benchmark</a><a href="#features">Features</a><a href="#faq">FAQ</a><a href="#install">Install</a><a href="/pro">Pro</a>
     <a class="btn btn-ghost btn-sm gh" href="#" data-repo>GitHub <span class="stars"></span></a>
   </div>
 </div></nav>
@@ -259,7 +259,7 @@
         <div class="jr"><i>🎞</i>Old videos and screen recordings<span>53 · 22.4 GB</span></div>
         <div class="jr"><i>🧩</i>Apps you haven’t opened in 6 months<span>6 · 1.8 GB</span></div>
         <div class="ja"><span>Move to Backup Drive</span><span class="t">Move to Trash</span></div></div></div>
-      <h3>Free up space</h3><p>Rover finds what’s eating your disk and hasn’t been touched in ages: old installers, forgotten videos, duplicate copies, apps you never open, stale downloads. Send them to the Trash or to a backup drive (each copy is checked before the original goes). Nothing is ever deleted outright, and ⌘Z undoes it.</p></div>
+      <h3>Free up space <a href="/pro" style="font:600 11px var(--display);letter-spacing:.04em;color:#1a0d05;background:var(--orange);padding:3px 8px;border-radius:99px;text-decoration:none;vertical-align:3px">PRO</a></h3><p>Rover finds what’s eating your disk and hasn’t been touched in ages: old installers, forgotten videos, duplicate copies, apps you never open, stale downloads. Send them to the Trash or to a backup drive (each copy is checked before the original goes). Nothing is ever deleted outright, and ⌘Z undoes it.</p></div>
     <div class="feat reveal"><div class="art"><div class="rule">New <b>invoice PDFs</b> in Downloads → <b>Documents/Invoices</b></div></div>
       <h3>Automations</h3><p>Small rules that keep folders tidy while you work. Existing files are left alone.</p></div>
     <div class="feat reveal"><div class="art"><svg class="lock" width="84" height="96" viewBox="0 0 14 16" shape-rendering="crispEdges"><path fill="#1A1430" d="M3 1h8v1h1v5h1v8H1V7h1V2h1z"/><path fill="#5C5578" d="M4 2h6v1h1v4H9V4H5v3H3V3h1z"/><path fill="#FF8A3D" d="M2 7h10v7H2z"/><path fill="#FFC291" d="M2 7h10v1H2z"/><path fill="#C85A26" d="M2 13h10v1H2z"/><path fill="#3CF2D0" d="M6 9h2v1h1v1H8v2H6v-2H5v-1h1z"/></svg></div>
@@ -293,6 +293,7 @@
       <details class="qa reveal"><summary>Why does macOS warn me the first time I open it?</summary><p>Rover isn&#x27;t notarized by Apple yet. Open System Settings → Privacy &amp; Security and click Open Anyway, or build it from source with one command.</p></details>
       <details class="qa reveal"><summary>Will Free Up Space delete my files?</summary><p>Never permanently. It only suggests; you choose. Files go to the Trash, or to a backup drive with the original sent to the Trash after the copy is checked, and ⌘Z puts everything back. It never suggests iCloud files, code projects or Apple&#x27;s apps.</p></details>
       <details class="qa reveal"><summary>Does it slow my Mac down?</summary><p>It indexes about 225,000 files in about 2 seconds at launch, then follows changes live. At rest it uses close to 0% CPU and about 30 MB of memory.</p></details>
+      <details class="qa reveal"><summary>Is Rover really free? What's Rover Pro?</summary><p>Yes. Search, Quick Look, moves with undo, app launching, the assistant and automations are free and open source. <a href="/pro">Rover Pro</a> is an optional subscription: $2.95 for the first month, then $9.95 a month. It adds sending huge files straight to anyone, Free Up Space, searches the text in your screenshots, finds photos by what's in them, searches backup drives that aren't plugged in, and adds pinned files, your own shortcut and a monthly space checkup. Pro is closed source and comes in the official app.</p></details>
       <details class="qa reveal"><summary>How do I uninstall it?</summary><p>Quit Rover from its menu, drag it from Applications to the Trash, and delete ~/Library/Application Support/Rover.</p></details>
   </div>
 </div></section>
@@ -312,6 +313,27 @@
 <span class="p">$</span> cd rover &amp;&amp; ./scripts/build.sh
 <span class="p">$</span> open dist/Rover.app</pre>
       <p style="color:var(--ink-3);font-size:14px;line-height:1.6;margin:16px 0 0">Plain Swift, no dependencies, about 5,000 lines. Read it, change it, ship your own. MIT licensed.</p></div>
+  </div>
+</div></section>
+
+<section id="pro"><div class="wrap">
+  <div class="eyebrow reveal">ROVER PRO</div>
+  <h2 class="reveal">Free forever. <em>Pro from $2.95.</em></h2>
+  <div class="install">
+    <div class="card reveal"><h3>Rover · Free</h3><ol class="steps">
+      <li><span>Plain-English search, typos and dates, in about 2 ms</span></li>
+      <li><span>Quick Look, move, rename, Trash, all with ⌘Z undo</span></li>
+      <li><span>App launching, the assistant, automations</span></li>
+    </ol></div>
+    <div class="card reveal"><h3>Rover Pro · $2.95 first month, then $9.95/mo</h3><ol class="steps">
+      <li><span><b>Send huge files:</b> type a name, press Send. Mac to Mac, encrypted, no size limit</span></li>
+      <li><span><b>Free Up Space:</b> finds the old installers, copies and videos eating your disk</span></li>
+      <li><span><b>Search the text in screenshots:</b> “wifi password” finds the screenshot it's in</span></li>
+      <li><span><b>Find photos by what's in them:</b> “dog”, “beach”, “coffee receipt”</span></li>
+      <li><span><b>Search unplugged drives:</b> “wedding video” → it's on Backup Drive</span></li>
+      <li><span>Plus pinned files, your own shortcut and a monthly space checkup</span></li>
+    </ol>
+    <div class="ctas" style="margin-top:20px;justify-content:flex-start"><a class="btn btn-primary" href="/pro">Get Rover Pro</a></div></div>
   </div>
 </div></section>
 

@@ -5,7 +5,15 @@ import AppKit
 import SwiftUI
 
 enum CLI {
+    /// Commands the assistant may not run (see ClaudeCodeAgent): anything that changes files, settings or accounts,
+    /// or moves data off the Mac. They stay available to people typing in Terminal.
+    static let notForAssistant: Set<String> = ["mv", "rule", "undo", "send", "receive", "signin", "inbox", "accept", "pro", "--index", "--render-pro", "--render-junk"]
+
     static func run(_ args: [String]) -> Never {
+        if ProcessInfo.processInfo.environment["ROVER_ASSISTANT"] != nil, let c = args.first, notForAssistant.contains(c) {
+            print("“rover \(c)” isn't available to the assistant. Propose it as a change for the person to approve instead.")
+            exit(2)
+        }
         let e = Engine.shared
         if args.first == "--help" || args.first == "-h" {
             print("""
@@ -14,6 +22,7 @@ enum CLI {
               rover -c <words>        also search inside files
               rover --index           rebuild the index
               rover --bench           time a set of queries
+              rover pro [activate <key> | off | renew]   Rover Pro status ($2.95 first month, then $9.95/mo)
             The menu bar app opens with ⌥Space.
             """)
             exit(0)
@@ -146,6 +155,7 @@ enum CLI {
             for h in r.hits.prefix(6) { print("  " + (h.isDir ? "📁 " : "   ") + Paths.pretty(h.path)) }
             exit(0)
         }
+        ProCLI.run(args, e)   // Pro commands (official build only)
         if args.first == "--render-junk", args.count == 2 {
             // draws the Free Up Space window into a PNG without opening anything on screen
             let m = JunkModel()
@@ -162,7 +172,8 @@ enum CLI {
             print("rendered \(args[1])"); exit(0)
         }
         if args.first == "junk" {
-            // what could go: big, old, unused. Nothing is moved from the command line.
+            // what could go: big, old, unused. Nothing is moved from the command line. (Rover Pro)
+            if !License.isPro { print("Free Up Space is part of Rover Pro: \(License.buyURL.absoluteString) (then: rover pro activate <key>)"); exit(1) }
             let r = JunkFinder.scan()
             let fmt = { (b: Int64) in ByteCountFormatter.string(fromByteCount: b, countStyle: .file) }
             // test hook: only inside a demo home, never on real files

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage Rover Pro</title>
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#07051a">
+<link rel="icon" href="/assets/icon-64.png">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/rover.css">
+<link rel="stylesheet" href="/pro/pro.css">
+</head>
+<body>
+<nav><div class="wrap"><a class="brand" href="/"><img src="/assets/icon-64.png" alt="">Rover</a></div></nav>
+<main class="wrap">
+  <div class="eyebrow">ROVER PRO</div>
+  <h1 id="title">Opening your billing page…</h1>
+  <p class="lede" id="lede">Cancel, change your card or download invoices on Stripe's secure page.</p>
+  <footer><a href="/pro">Rover Pro</a> · <a href="/">getrover.dev</a></footer>
+</main>
+<script>
+(async () => {
+  // Rover opens this page with the key after "#", which browsers never send to any server; it's posted to /api/portal.
+  const key = decodeURIComponent(location.hash.slice(1));
+  history.replaceState(null, "", location.pathname);
+  const fail = msg => { document.getElementById("title").textContent = "Couldn't open the billing page"; const l = document.getElementById("lede"); l.textContent = msg; l.classList.add("err"); };
+  if (!key) return fail("Open this from Rover's menu bar → Manage Subscription.");
+  try {
+    const r = await fetch("/api/portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key }) });
+    const j = await r.json();
+    if (r.ok && j.url) return location.replace(j.url);
+    fail(j.error || "Something went wrong. Try again in a minute.");
+  } catch (e) { fail("Couldn't reach getrover.dev. Check your connection and try again."); }
+})();
+</script>
+</body>
+</html>

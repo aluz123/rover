@@ -79,6 +79,9 @@ final class ClaudeCodeAgent {
         var env = ProcessInfo.processInfo.environment
         env["PATH"] = ((cli as NSString).deletingLastPathComponent) + ":/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
         env.removeValue(forKey: "ANTHROPIC_API_KEY") // use the person's Claude login
+        // The assistant reads file names and documents, which anyone can write. So its rover commands are read-only:
+        // CLI refuses anything that moves, sends, receives or changes settings (changes go through the Approve button).
+        env["ROVER_ASSISTANT"] = "1"
         p.environment = env
         let out = Pipe(), err = Pipe()
         p.standardOutput = out

@@ -13,3 +13,12 @@ docs/.vercel
 launch/*
 !launch/demo/
 !launch/homebrew/
+
+helper/rover-send/target/
+server/api.zip
+
+helper/rover-send/vendor/netwatch/target/
+
+# Rover Pro: closed source, kept in its own private repo
+/pro/
+/docs/api/

@@ -176,3 +176,8 @@ The index, your history and your rules stay in `~/Library/Application Support/Ro
 ## License
 
 MIT © 2026 Alex Towfigh. See [LICENSE](LICENSE).
+
+**Rover Pro** (sending files, image text search, unplugged drives, pins, Free Up Space and more) is a closed-source
+add-on that ships only in the official app from [getrover.dev](https://getrover.dev/pro). It isn't in this
+repository and isn't covered by the MIT License. Building from this repo gives you free Rover, with Pro menu items
+pointing to getrover.dev.

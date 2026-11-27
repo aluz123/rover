@@ -84,7 +84,7 @@ public final class Engine {
     private let swapLock = NSLock()
     public let config = Config.load()
     let learning: Learning
-    let supportDir: URL
+    public let supportDir: URL
     var indexURL: URL { supportDir.appendingPathComponent("index.bin") }
     private var stream: FSEventStreamRef?
     private let watchQ = DispatchQueue(label: "rover.watch")

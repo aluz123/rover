@@ -1,7 +1,7 @@
 // Rover — Copyright (c) 2026 Alex Towfigh. MIT License.
 import Foundation
 
-public enum HitSource { case name, content }
+public enum HitSource { case name, content, image, drive }
 
 public struct Hit: Identifiable {
     public var id: String { path }

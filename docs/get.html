@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rover Files</title>
+<meta name="description" content="Someone sent you files with Rover: straight from their Mac to yours, encrypted, no size limit.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#07051a">
+<link rel="icon" href="/assets/icon-64.png">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/rover.css">
+<link rel="stylesheet" href="/pro/pro.css">
+</head>
+<body>
+<nav><div class="wrap"><a class="brand" href="/"><img src="/assets/icon-64.png" alt="">Rover</a></div></nav>
+<main class="wrap">
+  <div class="eyebrow">FILES FOR YOU</div>
+  <h1 id="title">Someone sent you <em>files.</em></h1>
+  <p class="lede">They're coming straight from their Mac to yours: encrypted end to end, no size limit, and nothing stored in the cloud.</p>
+  <div class="ctas">
+    <a class="btn btn-primary" id="open" href="#">Open in Rover</a>
+    <a class="btn btn-ghost" href="https://github.com/aluz123/rover/releases/latest/download/Rover.zip">Get Rover for Mac (free)</a>
+  </div>
+  <div class="qa">
+    <h2>Three steps</h2>
+    <p><b>1.</b> Get Rover (free) and open it.</p>
+    <p><b>2.</b> Sign in with the email address this was sent to.</p>
+    <p><b>3.</b> Come back here and click <b>Open in Rover</b>, or just accept the files in Rover's Transfers window.</p>
+    <p><b>Is it safe?</b> The link only works while the sender's Mac is online, the transfer is encrypted from their Mac to yours, and if they shared it with specific people, only those people's Macs can download it.</p>
+  </div>
+  <footer>Rover by Alex Towfigh · <a href="/">getrover.dev</a></footer>
+</main>
+<script>
+  // the transfer ticket is in the #fragment, so it never reaches any server, including this one
+  const t = location.hash.slice(1);
+  const ok = /^blob[a-z2-7]{60,}$/.test(t);
+  const open = document.getElementById("open");
+  if (ok) open.href = "rover://get?t=" + t;
+  else { open.setAttribute("aria-disabled", "true"); document.getElementById("title").innerHTML = "This link is <em>incomplete.</em>"; }
+</script>
+</body>
+</html>

@@ -4,11 +4,13 @@ import SwiftUI
 import Carbon.HIToolbox
 import ServiceManagement
 import Quartz
+import UserNotifications
 import RoverCore
 
 final class SearchPanel: NSPanel {
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { true }
+    static var recording = false   // demo footage: never take keyboard focus from whatever the user is doing
+    override var canBecomeKey: Bool { !SearchPanel.recording }
+    override var canBecomeMain: Bool { !SearchPanel.recording }
     override func cancelOperation(_ sender: Any?) { (NSApp.delegate as? AppDelegate)?.hide() }
     // Quick Look asks the responder chain who controls it
     override func acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Bool { true }
@@ -22,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var status: NSStatusItem!
     let model = SearchModel()
     var hotKey: EventHotKeyRef?
+    let services = ServiceProvider()
     var keyMonitor: Any?
 
     /// A menu-bar app has no menu bar, and macOS routes ⌘C/⌘V/⌘X/⌘A through the Edit menu, so give it one (never shown).
@@ -42,9 +45,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ n: Notification) {
         installEditMenu()
         AppDelegate.shared = self
-        setupStatusItem()
+        let recording = ProcessInfo.processInfo.environment["ROVER_DEMO_FRAMES"] != nil
+        SearchPanel.recording = recording
+        if !recording { setupStatusItem() }
         setupPanel()
-        registerHotKey()
+        if !recording { registerHotKey() }
         Engine.shared.onChange = { [weak self] in DispatchQueue.main.async { self?.model.engineChanged() } }
         Engine.shared.openHandler = { path, reveal in
             let u = URL(fileURLWithPath: path)
@@ -52,6 +57,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
         RuleEngine.shared.onActivity = { [weak self] msg in DispatchQueue.main.async { self?.model.flash("Automation · " + msg) } }
         Engine.shared.start()
+        if recording { recordDemo(); return }   // demo footage: renders frames off-screen, never shows a window
+        UNUserNotificationCenter.current().delegate = NotificationOpener.shared
+        Checkup.start()
+        ProJobs.start()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 20) { AppDelegate.renewLicense(); self.renewTimer = self.renewTimer ?? Timer.scheduledTimer(withTimeInterval: 12 * 3600, repeats: true) { _ in AppDelegate.renewLicense() } }
+        if Account.shared.signedIn { Account.shared.registerDevice(); Inbox.shared.start() }
+        NSApp.servicesProvider = services
+        NSUpdateDynamicServices()
         if let out = ProcessInfo.processInfo.environment["ROVER_DEMO_ACCESS"] {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 AccessWindow.shared.show()
@@ -83,7 +96,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    func applicationWillTerminate(_ n: Notification) { Engine.shared.saveIfDirty() }
+    func applicationWillTerminate(_ n: Notification) { Transfers.shared.stopAll(); Engine.shared.saveIfDirty() }
+
+    /// rover://activate?key=ROVER-… (the button on the receipt page) and rover://pro
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for u in urls where u.scheme == "rover" {
+            if u.host == "get" {   // rover://get?t=blob… (from getrover.dev/get). Any web page can open these, so ask first.
+                guard Transfers.ticket(in: u.absoluteString) != nil else { continue }
+                NSApp.activate(ignoringOtherApps: true)
+                let a = NSAlert()
+                a.messageText = "Download files from this link?"
+                a.informativeText = "Only accept links from people you know. The files go to your Downloads folder, and macOS checks any apps before they open."
+                a.addButton(withTitle: "Download"); a.addButton(withTitle: "Cancel")
+                if a.runModal() == .alertFirstButtonReturn { Transfers.shared.receive(u.absoluteString) }
+                continue
+            }
+            let key = URLComponents(url: u, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "key" }?.value
+            ProWindow.shared.show(key: key)
+        }
+    }
+
+    var renewTimer: Timer?
+    /// Subscription keys last one paid period (+3 days); swap in a fresh one in the last week. Quiet unless it ended.
+    static func renewLicense() {
+        License.renewIfNeeded { r in
+            if r == .renewed { AppDelegate.shared?.licenseChanged() }
+        }
+    }
+
+    /// Pro turned on or off: re-register the shortcut (a chosen one only applies with Pro) and start the checkup.
+    func licenseChanged() {
+        renewTimer = renewTimer ?? Timer.scheduledTimer(withTimeInterval: 12 * 3600, repeats: true) { _ in AppDelegate.renewLicense() }
+        registerHotKey()
+        status?.button?.toolTip = "Rover — \(Shortcut.current.label)"
+        if License.isPro { Checkup.runIfDue(); ProJobs.start() }
+    }
 
     // MARK: menu bar
 
@@ -97,17 +144,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             } else {
                 b.image = NSImage(systemSymbolName: "magnifyingglass", accessibilityDescription: "Rover")
             }
-            b.toolTip = "Rover — ⌥Space"
+            b.toolTip = "Rover — \(Shortcut.current.label)"
             b.target = self
             b.action = #selector(statusClicked)
             b.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            // drop files on the menu-bar icon to send them
+            let drop = DropView(frame: b.bounds); drop.autoresizingMask = [.width, .height]
+            b.addSubview(drop)
         }
     }
 
     @objc func statusClicked() {
         if NSApp.currentEvent?.type == .rightMouseUp || NSApp.currentEvent?.modifierFlags.contains(.control) == true {
             let m = NSMenu()
-            m.addItem(withTitle: "Search  (⌥Space)", action: #selector(toggle), keyEquivalent: "").target = self
+            m.addItem(withTitle: "Search  (\(Shortcut.current.label))", action: #selector(toggle), keyEquivalent: "").target = self
             m.addItem(.separator())
             let info = NSMenuItem(title: "\(Engine.shared.fileCount.formatted()) files indexed", action: nil, keyEquivalent: "")
             info.isEnabled = false
@@ -138,12 +188,58 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             let acc = NSMenuItem(title: Access.hasFullDiskAccess ? "File Access: Full ✓" : "Give Rover Access…", action: #selector(showAccess), keyEquivalent: "")
             acc.target = self
             m.addItem(acc)
-            m.addItem(withTitle: "Free Up Space…", action: #selector(freeUp), keyEquivalent: "").target = self
+            let found = Checkup.enabled && Checkup.foundBytes >= Checkup.threshold ? "  (\(ByteCountFormatter.string(fromByteCount: Checkup.foundBytes, countStyle: .file)) found)" : ""
+            m.addItem(withTitle: "Send Files…" + (License.isPro ? "" : "  (Pro)"), action: #selector(sendFiles), keyEquivalent: "").target = self
+            let waiting = Inbox.shared.offers.filter { $0.status == "new" || $0.status == "seen" }.count
+            m.addItem(withTitle: "Transfers…" + (waiting > 0 ? "  (\(waiting) waiting)" : ""), action: #selector(showTransfers), keyEquivalent: "").target = self
+            m.addItem(withTitle: Account.shared.email.map { "Signed in as \($0)…" } ?? "Sign In to Receive Files…", action: #selector(accountAction), keyEquivalent: "").target = self
+            if Account.shared.signedIn {
+                m.addItem(withTitle: People.shared.google.isEmpty ? "Import Gmail Contacts…" : "Refresh Gmail Contacts (\(People.shared.google.count))", action: #selector(importGmail), keyEquivalent: "").target = self
+            }
+            m.addItem(withTitle: "Free Up Space…" + found + (License.isPro ? "" : "  (Pro)"), action: #selector(freeUp), keyEquivalent: "").target = self
             m.addItem(withTitle: "Rebuild Index", action: #selector(rebuild), keyEquivalent: "").target = self
             let login = NSMenuItem(title: "Open at Login", action: #selector(toggleLogin), keyEquivalent: "")
             login.target = self
             login.state = SMAppService.mainApp.status == .enabled ? .on : .off
             m.addItem(login)
+            m.addItem(.separator())
+            let pro = License.isPro
+            m.addItem(withTitle: pro ? "Rover Pro ✓" : "Get Rover Pro (\(License.price) first month)…", action: #selector(showPro), keyEquivalent: "").target = self
+            if License.info?.kind == "pro2" { m.addItem(withTitle: "Manage Subscription…", action: #selector(manageSubscription), keyEquivalent: "").target = self }
+            let sc = NSMenuItem(title: "Shortcut: \(Shortcut.current.label)", action: nil, keyEquivalent: "")
+            let scMenu = NSMenu()
+            for s in Shortcut.all {
+                let it = NSMenuItem(title: s.label + (pro || s == Shortcut.standard ? "" : "  (Pro)"), action: #selector(pickShortcut(_:)), keyEquivalent: "")
+                it.target = self; it.representedObject = s.id; it.state = s == Shortcut.current ? .on : .off
+                scMenu.addItem(it)
+            }
+            sc.submenu = scMenu
+            m.addItem(sc)
+            let chk = NSMenuItem(title: "Monthly Space Checkup" + (pro ? "" : "  (Pro)"), action: #selector(toggleCheckup), keyEquivalent: "")
+            chk.target = self; chk.state = Checkup.enabled ? .on : .off
+            m.addItem(chk)
+            if pro {
+                let img = NSMenuItem(title: ProJobs.imageStatus, action: nil, keyEquivalent: ""); img.isEnabled = false
+                m.addItem(img)
+            }
+            let drv = NSMenuItem(title: "Drives" + (pro ? "" : "  (Pro)"), action: pro ? nil : #selector(showPro), keyEquivalent: "")
+            drv.target = self
+            if pro {
+                let dm = NSMenu()
+                let all = DriveCatalog.shared.all
+                if all.isEmpty { let n = NSMenuItem(title: "Plug in a drive and Rover remembers what's on it", action: nil, keyEquivalent: ""); n.isEnabled = false; dm.addItem(n) }
+                for d in all {
+                    let busy = DriveCatalog.shared.isCataloging(d.uuid)
+                    let it = NSMenuItem(title: "\(d.name): \(d.count.formatted()) files, \(ByteCountFormatter.string(fromByteCount: d.bytes, countStyle: .file))" + (busy ? " · reading…" : d.isConnected ? "" : " · not plugged in"), action: nil, keyEquivalent: "")
+                    it.isEnabled = false; dm.addItem(it)
+                    let f = NSMenuItem(title: "    Forget “\(d.name)”", action: #selector(forgetDrive(_:)), keyEquivalent: ""); f.target = self; f.representedObject = d.uuid
+                    dm.addItem(f)
+                }
+                dm.addItem(.separator())
+                dm.addItem(withTitle: "Read Plugged-In Drives Now", action: #selector(readDrives), keyEquivalent: "").target = self
+                drv.submenu = dm
+            }
+            m.addItem(drv)
             m.addItem(.separator())
             m.addItem(withTitle: "About Rover", action: #selector(about), keyEquivalent: "").target = self
             m.addItem(withTitle: "Quit Rover", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -164,6 +260,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     @objc func showAccess() { AccessWindow.shared.show() }
     @objc func freeUp() { JunkWindow.shared.show() }
+    @objc func showPro() { ProWindow.shared.show() }
+    /// Opens Stripe's billing page for this subscription (cancel, change card, invoices). The key rides in the
+    /// fragment, which browsers never send to a server; the page posts it to /api/portal.
+    @objc func manageSubscription() {
+        guard let k = License.storedKey, var c = URLComponents(url: License.manageURL, resolvingAgainstBaseURL: false) else { return }
+        c.fragment = k
+        if let u = c.url { NSWorkspace.shared.open(u) }
+    }
+    @objc func showTransfers() { TransfersWindow.shared.show() }
+    @objc func sendFiles() {
+        guard License.isPro else { ProWindow.shared.show(); return }
+        let p = NSOpenPanel(); p.canChooseFiles = true; p.canChooseDirectories = true; p.allowsMultipleSelection = true; p.prompt = "Send"
+        NSApp.activate(ignoringOtherApps: true)
+        if p.runModal() == .OK { ShareWindow.shared.show(p.urls.map { $0.path }) }
+    }
+    @objc func importGmail() { People.shared.load(); People.shared.refreshGoogle() }
+    @objc func accountAction() {
+        if Account.shared.signedIn {
+            let a = NSAlert(); a.messageText = "Sign out of Rover?"; a.informativeText = "People won't be able to send files to this Mac until you sign in again."
+            a.addButton(withTitle: "Sign Out"); a.addButton(withTitle: "Cancel")
+            NSApp.activate(ignoringOtherApps: true)
+            if a.runModal() == .alertFirstButtonReturn { Account.shared.signOut() }
+        } else { Account.shared.signIn() }
+    }
+    @objc func forgetDrive(_ i: NSMenuItem) { if let id = i.representedObject as? String { DriveCatalog.shared.forget(id) } }
+    @objc func readDrives() { DriveCatalog.shared.refresh(force: true) }
+    @objc func pickShortcut(_ i: NSMenuItem) {
+        guard let id = i.representedObject as? String, let s = Shortcut.all.first(where: { $0.id == id }) else { return }
+        guard License.isPro || s == Shortcut.standard else { ProWindow.shared.show(); return }
+        Shortcut.choose(s)
+        if registerHotKey() { status.button?.toolTip = "Rover — \(s.label)" }
+        else {
+            Shortcut.choose(Shortcut.standard); registerHotKey()
+            NSApp.activate(ignoringOtherApps: true)
+            let a = NSAlert(); a.messageText = "\(s.label) is taken"; a.informativeText = "Another app already uses that shortcut, so Rover kept \(Shortcut.standard.label)."; a.runModal()
+        }
+    }
+    @objc func toggleCheckup() {
+        guard License.isPro else { ProWindow.shared.show(); return }
+        Checkup.setEnabled(!Checkup.enabled)
+        if Checkup.enabled { Checkup.runIfDue() }
+    }
 
     @objc func undoLast() { model.flash(ActionRunner.shared.undoLast()); model.schedule() }
     @objc func toggleRule(_ i: NSMenuItem) {
@@ -304,7 +442,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         panel.orderOut(nil)
         if let m = keyMonitor { NSEvent.removeMonitor(m); keyMonitor = nil }
         // hiding the whole app would also hide Free Up Space / Access if they're open (that was the "nothing happens" bug)
-        if !keepApp && !(JunkWindow.shared.isVisible || AccessWindow.shared.isVisible) { NSApp.hide(nil) }
+        if !keepApp && !(JunkWindow.shared.isVisible || AccessWindow.shared.isVisible || ProWindow.shared.isVisible || TransfersWindow.shared.isVisible || ShareWindow.shared.isVisible) { NSApp.hide(nil) }
     }
 
     func windowDidResignKey(_ n: Notification) { if !model.previewing { hide() } }
@@ -317,16 +455,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    // MARK: hotkey ⌥Space
+    // MARK: hotkey (⌥Space, or the Pro shortcut you picked)
 
-    func registerHotKey() {
-        var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
-        InstallEventHandler(GetApplicationEventTarget(), { _, _, _ in
-            DispatchQueue.main.async { AppDelegate.shared.toggle() }
-            return noErr
-        }, 1, &spec, nil, nil)
+    private var handlerInstalled = false
+    @discardableResult
+    func registerHotKey() -> Bool {
+        if !handlerInstalled {
+            handlerInstalled = true
+            var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+            InstallEventHandler(GetApplicationEventTarget(), { _, _, _ in
+                DispatchQueue.main.async { AppDelegate.shared.toggle() }
+                return noErr
+            }, 1, &spec, nil, nil)
+        }
+        if let h = hotKey { UnregisterEventHotKey(h); hotKey = nil }
+        let s = Shortcut.current
         let id = EventHotKeyID(signature: OSType(0x48554E54), id: 1)
-        let status = RegisterEventHotKey(UInt32(kVK_Space), UInt32(optionKey), id, GetApplicationEventTarget(), 0, &hotKey)
-        if status != noErr { NSLog("Rover: could not register ⌥Space (\(status))") }
+        let status = RegisterEventHotKey(UInt32(s.key), UInt32(s.mods), id, GetApplicationEventTarget(), 0, &hotKey)
+        if status != noErr { NSLog("Rover: could not register \(s.label) (\(status))"); return false }
+        return true
+    }
+}
+
+/// Sits over the menu-bar icon: files dropped on it are sent with Rover. Clicks pass through to the button.
+final class DropView: NSView {
+    override init(frame: NSRect) { super.init(frame: frame); registerForDraggedTypes([.fileURL]) }
+    required init?(coder: NSCoder) { fatalError() }
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+    override func draggingEntered(_ s: NSDraggingInfo) -> NSDragOperation { .copy }
+    override func performDragOperation(_ s: NSDraggingInfo) -> Bool {
+        let urls = (s.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL]) ?? []
+        guard !urls.isEmpty else { return false }
+        ShareWindow.shared.show(urls.map { $0.path })
+        return true
     }
 }

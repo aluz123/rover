@@ -147,6 +147,12 @@ final class SearchModel: ObservableObject {
     func schedule() {
         gen += 1
         let g = gen, t = text, m = mode
+        if m == .search, Transfers.ticket(in: t) != nil {
+            setHits([]); chips = []; expanded = []; contentLoading = false
+            heading = "↩ Receive the files in this Rover link (they go to Downloads)"
+            stats = "Direct, encrypted transfer"
+            return
+        }
         if m == .search, let ph = Self.pathHits(t) {
             setHits(ph.hits)
             if t != lastText { selected = 0; marked = [] }
@@ -170,23 +176,35 @@ final class SearchModel: ObservableObject {
                 return
             }
             let r = e.search(empty ? "recent" : t, limit: 60)
+            let pins = empty && License.isPro ? Assistant.hits(for: Pins.all) : []
+            // Rover Pro: text in screenshots/images, what's in photos, and files on drives that aren't plugged in
+            let seen = Set(r.hits.map { $0.path })
+            let imageHits = !empty && License.isPro ? ImageIndex.shared.hits(for: r.query, excluding: seen) : []
+            let driveHits = !empty && License.isPro ? DriveCatalog.shared.hits(for: r.query, excluding: seen) : []
+            let imageFirst = r.query.kinds.contains(.image) || (r.hits.first?.score ?? 0) < 160
             DispatchQueue.main.async {
                 guard g == self.gen else { return }
                 let keep = self.hits.indices.contains(self.selected) ? self.hits[self.selected].path : nil
                 let sameText = t == self.lastText
-                let merged = (sameText && self.contentFor == t) ? r.hits + self.contentCache.filter { c in !r.hits.contains { $0.path == c.path } } : r.hits
+                var merged = (sameText && self.contentFor == t) ? r.hits + self.contentCache.filter { c in !r.hits.contains { $0.path == c.path } } : r.hits
+                if !pins.isEmpty { merged = pins + merged.filter { h in !pins.contains { $0.path == h.path } } }
+                let fresh = imageHits.filter { h in !merged.contains { $0.path == h.path } }
+                merged = imageFirst ? fresh + merged : merged + fresh
+                merged += driveHits.filter { h in !merged.contains { $0.path == h.path } }
                 self.setHits(merged)
-                self.selected = keep.flatMap { k in r.hits.firstIndex { $0.path == k } } ?? 0
+                self.selected = keep.flatMap { k in self.hits.firstIndex { $0.path == k } } ?? 0
                 if t != self.lastText { self.selected = 0; self.marked = [] }
                 self.lastText = t
                 self.chips = empty ? [] : r.query.chips
                 self.expanded = r.expanded
-                self.heading = empty ? "Recently changed" : (Self.isFreeUpPhrase(t) ? "↩ Open Free Up Space: find big, old files you don't need" : "")
+                self.heading = empty ? (pins.isEmpty ? "Recently changed" : "Pinned (⌘D) · then recently changed") : (Self.isFreeUpPhrase(t) ? "↩ Open Free Up Space: find big, old files you don't need" + (License.isPro ? "" : " (Rover Pro)") : "")
                 if Self.isFreeUpPhrase(t) { self.chips = [] }
                 self.contentLoading = false
                 if !e.isReady { self.stats = e.status }
                 else if empty { self.stats = "\(e.fileCount.formatted()) files" }
                 else { self.stats = "\(r.total.formatted()) matches · \(String(format: "%.0f", max(1, r.millis))) ms" }
+                if !imageHits.isEmpty { self.stats += " · \(imageHits.count) in images" }
+                if !driveHits.isEmpty { self.stats += " · \(driveHits.count) on drives" }
                 if !empty && !(sameText && self.contentFor == t) { self.scheduleContent(g, t, r) }
                 if sameText && self.contentFor == t && !self.contentCache.isEmpty { self.stats += " · \(self.contentCache.count) inside files" }
             }
@@ -259,6 +277,7 @@ final class SearchModel: ObservableObject {
 
     func open() {
         guard let h = current else { return }
+        if h.source == .drive && !FileManager.default.fileExists(atPath: h.path) { flash("That file is \(h.why.replacingOccurrences(of: " · not plugged in", with: "")). Plug the drive in to open it."); return }
         Engine.shared.recordOpen(h.path, query: text)
         AppDelegate.shared.hide()
         NSWorkspace.shared.open(URL(fileURLWithPath: h.path))
@@ -314,6 +333,23 @@ final class SearchModel: ObservableObject {
         AppDelegate.shared.resizeForPreview()
     }
 
+    /// ⌘D: pin or unpin (Rover Pro). Pins show first whenever the search box is empty.
+    func togglePin() {
+        guard mode == .search, let h = current else { return }
+        guard License.isPro else { flash("Pinned files come with Rover Pro · opening…"); ProWindow.shared.show(); return }
+        flash(Pins.toggle(h.path) ? "Pinned “\(h.name)” · shows first when the box is empty" : "Unpinned “\(h.name)”")
+        if text.trimmingCharacters(in: .whitespaces).isEmpty { schedule() }
+    }
+
+    /// ⌘S: send the selected (or marked) files straight to another Mac (Rover Pro).
+    func sendSelected() {
+        let ts = targets.filter { $0.source != .drive || FileManager.default.fileExists(atPath: $0.path) }
+        guard !ts.isEmpty else { flash("Select a file or folder to send"); return }
+        guard License.isPro else { flash("Sending files comes with Rover Pro · opening…"); ProWindow.shared.show(); return }
+        AppDelegate.shared.hide(keepApp: true)
+        ShareWindow.shared.show(ts.map { $0.path })
+    }
+
     func trash() {
         let ts = targets
         guard !ts.isEmpty else { return }
@@ -349,6 +385,7 @@ final class SearchModel: ObservableObject {
         switch mode {
         case .search:
             if text.hasSuffix("?") { startAsk(); return }
+            if Transfers.ticket(in: text) != nil { Transfers.shared.receive(text); text = ""; AppDelegate.shared.hide(keepApp: true); return }
             if Self.isFreeUpPhrase(text) {
                 AppDelegate.shared.hide(keepApp: true)
                 JunkWindow.shared.show()
@@ -519,6 +556,8 @@ final class SearchModel: ObservableObject {
         case kVK_ANSI_C where opt: copyPath(); return true
         case kVK_ANSI_C where shift: copyFiles(); return true
         case kVK_ANSI_O: reveal(); return true
+        case kVK_ANSI_D: togglePin(); return true
+        case kVK_ANSI_S: sendSelected(); return true
         default: return false
         }
     }

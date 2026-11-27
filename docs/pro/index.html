@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rover Pro</title>
+<meta name="description" content="Rover Pro: search the text in your screenshots, find photos by what's in them, and send huge files straight to anyone, Mac to Mac. $2.95 for the first month, then $9.95 a month.">
+<meta property="og:title" content="Rover Pro: $2.95 your first month">
+<meta property="og:image" content="https://getrover.dev/assets/og.png">
+<meta name="theme-color" content="#07051a">
+<link rel="icon" href="/assets/icon-64.png">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/rover.css">
+<link rel="stylesheet" href="/pro/pro.css">
+</head>
+<body>
+<nav><div class="wrap"><a class="brand" href="/"><img src="/assets/icon-64.png" alt="">Rover</a></div></nav>
+<main class="wrap">
+  <div class="eyebrow">ROVER PRO</div>
+  <h1>Send anything. Find <em>everything.</em></h1>
+  <p class="lede">Rover finds files by name, free, forever. Pro sends files of any size straight to anyone, and finds files by what they show: the text in a screenshot, what's in a photo, and files on a drive sitting in a drawer.</p>
+  <div class="ctas">
+    <a class="btn btn-primary" id="buy" href="/api/checkout">Start Rover Pro · $2.95</a>
+    <span class="fine">$2.95 for the first month, then $9.95 a month. Every Mac you own. Cancel anytime.</span>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>Send huge files, Mac to Mac</h3><p>Pick a file, type a name or email, press Send. It goes straight from your Mac to theirs, end-to-end encrypted, with no size limit and no upload to wait for. Works through VPNs, picks up where it left off, and only the people you choose can open it.</p></div>
+    <div class="card"><h3>Free Up Space</h3><p>Finds what's eating your disk and hasn't been opened in ages: old installers, extra copies, forgotten videos, apps you never use. Trash or a backup drive, never deleted, and <span class="k">⌘Z</span> undoes it.</p></div>
+    <div class="card"><h3>Search the text in screenshots</h3><p>Type <span class="k">wifi password</span> and get the screenshot it's in. Rover reads the text in your images with Apple's on-device Vision. Nothing is uploaded.</p></div>
+    <div class="card"><h3>Find photos by what's in them</h3><p><span class="k">dog</span>, <span class="k">beach</span>, <span class="k">laptop</span>, <span class="k">coffee receipt</span>: Rover knows what your images show, even when they're named IMG_2231.</p></div>
+    <div class="card"><h3>Search unplugged drives</h3><p>Plug a backup drive in once and Rover remembers what's on it. Later, <span class="k">wedding video</span> tells you it's on “Backup Drive”, even when that drive is in a drawer.</p></div>
+    <div class="card"><h3>Pinned files</h3><p>Press <span class="k">⌘D</span> on any result. Pinned files sit on top every time you open Rover.</p></div>
+    <div class="card"><h3>Your own shortcut</h3><p>Not a fan of <span class="k">⌥Space</span>? Pick <span class="k">⌥⌘Space</span>, <span class="k">⌘;</span>, <span class="k">⌥F</span> and more from the menu bar.</p></div>
+    <div class="card"><h3>Monthly space checkup</h3><p>Once a month Rover looks for old installers, extra copies and forgotten big files, and tells you when there's over 1 GB to clear. It never moves anything by itself.</p></div>
+  </div>
+
+  <div class="qa">
+    <h2>How it works</h2>
+    <p><b>After you subscribe,</b> you land on a page with your key and an <b>Open in Rover</b> button. One click and Pro is on. You can also paste the key in Rover's menu → Get Rover Pro. Rover renews the key by itself each month while you're subscribed.</p>
+    <p><b>Lost your key?</b> Open the receipt link again: it shows a working key for as long as you're subscribed.</p>
+    <p><b>Cancel anytime</b> from Rover's menu → Manage Subscription. Pro keeps working until the end of the month you paid for.</p>
+    <p><b>What leaves my Mac?</b> Search stays on your Mac: images are read by Apple's Vision framework and drive catalogs are stored locally. Files you send go straight to the other Mac, encrypted end to end; our servers only help the two Macs find each other. Once a month Rover checks with getrover.dev that your subscription is still active.</p>
+    <p><b>Which images?</b> Screenshots, downloads and pictures in your Desktop, Documents, Downloads, Pictures and iCloud Drive folders. Rover reads the newest first, a few per second, in the background. Photos inside the Photos app aren't included.</p>
+    <p><b>Is Pro open source?</b> Rover's search is, and stays free under the MIT License. Rover Pro is closed source and comes only in the official app from getrover.dev. Your subscription pays for the servers that make sending fast and keeps Rover maintained.</p>
+    <p><b>Refunds:</b> payments are final, so there are no refunds, including for part of a month. Cancel anytime to stop the next charge. If a key doesn't work, open the receipt link again or <a href="https://github.com/aluz123/rover/issues">open an issue</a>.</p>
+  </div>
+  <footer>Rover by Alex Towfigh · <a href="/">getrover.dev</a></footer>
+</main>
+<script>
+  const why = new URLSearchParams(location.search).get("checkout");
+  if (why) {
+    const n = document.createElement("p"); n.className = "fine err";
+    n.textContent = why === "soon" ? "Checkout opens very soon. Check back shortly." : "Checkout didn't open. Please try again in a minute.";
+    document.querySelector(".ctas").after(n);
+  }
+  // /api/checkout opens Stripe Checkout ($9.95/mo price with a $7.00 first-month coupon); see docs/api/checkout.js.
+</script>
+</body>
+</html>

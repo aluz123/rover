@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rover Pro Key</title>
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#07051a">
+<link rel="icon" href="/assets/icon-64.png">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Silkscreen&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/rover.css">
+<link rel="stylesheet" href="/pro/pro.css">
+</head>
+<body>
+<nav><div class="wrap"><a class="brand" href="/"><img src="/assets/icon-64.png" alt="">Rover</a></div></nav>
+<main class="wrap">
+  <div class="eyebrow">ROVER PRO</div>
+  <h1 id="title">Getting your key…</h1>
+  <p class="lede" id="lede">Checking your payment. This takes a second.</p>
+  <div class="keybox" id="key" hidden></div>
+  <div class="ctas" id="actions" hidden>
+    <a class="btn btn-primary" id="open" href="#">Open in Rover</a>
+    <button class="btn btn-ghost" id="copy" type="button">Copy key</button>
+  </div>
+  <div class="qa" id="help" hidden>
+    <p><b>If the button doesn't open Rover:</b> click Rover in the menu bar with the right mouse button, choose <b>Get Rover Pro</b>, paste the key and press Activate.</p>
+    <p><b>Keep this page.</b> Bookmark it: while you're subscribed this link shows a working key on any Mac. Rover renews the key by itself each month.</p>
+  </div>
+  <footer>Thank you for supporting Rover. <a href="/">getrover.dev</a></footer>
+</main>
+<script>
+(async () => {
+  const $ = id => document.getElementById(id);
+  const sid = new URLSearchParams(location.search).get("session_id");
+  const fail = msg => { $("title").textContent = "Hmm, no key yet"; $("lede").innerHTML = ""; $("lede").append(msg); $("lede").classList.add("err"); };
+  if (!sid) return fail("This page needs the link from your Rover Pro receipt.");
+  for (let i = 0; i < 5; i++) {   // the payment can take a moment to settle
+    let r, j = {};
+    try { r = await fetch("/api/license?session_id=" + encodeURIComponent(sid)); j = await r.json(); } catch (e) { j = { error: "Couldn't reach getrover.dev. Check your connection and refresh." }; }
+    if (r && r.ok && j.key) {
+      $("title").innerHTML = "You're Pro. <em>Thank you.</em>";
+      $("lede").textContent = "Click Open in Rover to turn it on. That's it.";
+      $("key").textContent = j.key; $("key").hidden = false;
+      $("open").href = "rover://activate?key=" + encodeURIComponent(j.key);
+      $("actions").hidden = false; $("help").hidden = false;
+      $("copy").onclick = async () => { try { await navigator.clipboard.writeText(j.key); $("copy").textContent = "Copied"; } catch (e) {} };
+      return;
+    }
+    if (!r || r.status !== 402) return fail(j.error || "Something went wrong. Refresh the page.");
+    await new Promise(ok => setTimeout(ok, 2000));
+  }
+  fail("The payment is still settling. Refresh this page in a minute.");
+})();
+</script>
+</body>
+</html>
