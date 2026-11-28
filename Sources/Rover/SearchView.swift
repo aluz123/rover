@@ -117,7 +117,7 @@ struct SearchView: View {
             Spacer()
             switch model.mode {
             case .search:
-                Hint(keys: "↩", label: "open"); Hint(keys: "⌘↩", label: "show in Finder"); Hint(keys: "⌘M", label: "move")
+                Hint(keys: "↩", label: "open"); Hint(keys: "⌘↩", label: "show in Finder"); Hint(keys: "⌘S", label: "send"); Hint(keys: "⌘M", label: "move")
                 Hint(keys: "space", label: "preview"); Hint(keys: "⇥", label: "ask")
             case .moveTo:
                 Hint(keys: "↩", label: "move here"); Hint(keys: "esc", label: "cancel")

@@ -34,6 +34,7 @@ struct PreviewPane: View {
                     HStack(spacing: 6) {
                         PaneButton(title: "Open", icon: "arrow.up.forward.app") { model.open() }
                         PaneButton(title: "Show in Finder", icon: "folder") { model.reveal() }
+                        PaneButton(title: "Send…", icon: "paperplane") { model.sendSelected() }
                         PaneButton(title: "Move…", icon: "arrow.right.doc.on.clipboard") { model.startMove() }
                     }
                     .padding(.top, 2)
