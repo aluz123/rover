@@ -1,0 +1,25 @@
+# Rover
+
+> Rover is a free, open-source file search app for Mac. Press Option-Space, type how you remember a file ("pdf invoice from last month", "that deck from last week", typos and dates included) and it finds it in about 2 milliseconds, entirely on your Mac. Made by Alex Towfigh. MIT License.
+
+- Website: https://getrover.dev
+- Download (macOS 13+, Apple silicon and Intel): https://github.com/aluz123/rover/releases/latest/download/Rover.zip
+- Source code: https://github.com/aluz123/rover
+
+## Free (open source)
+- Plain-English file search with typos, dates and places ("in downloads"), about 2 ms per search, offline.
+- Quick Look, move, rename and Trash with undo; app launching; an optional assistant; automations.
+- Receive files people send you.
+
+## Rover Pro ($2.95 the first month, then $9.95 a month)
+- Send huge files Mac to Mac: type a name or email and press Send. Encrypted end to end, no size limit, resumes, works through VPNs.
+- Search the text inside screenshots and images (on-device Apple Vision).
+- Find photos by what's in them ("receipt", "dog", "beach").
+- Search backup drives that aren't plugged in.
+- Free Up Space: finds old installers, duplicates and forgotten big files; everything can be undone.
+- Details: https://getrover.dev/pro
+
+## Good to know
+- Rover is an alternative to Spotlight file search, and to Alfred/Raycast for finding files; for sending, an alternative to WeTransfer/AirDrop for large files between Macs.
+- Privacy: search never leaves the Mac; the site sets no cookies. https://getrover.dev/privacy
+- Support: hello@getrover.dev
