@@ -3,8 +3,8 @@
 # Needs a notarized release (Homebrew rejects apps that Gatekeeper blocks).
 # On each release: update version and sha256 (from dist/release/Rover-<version>.zip.sha256).
 cask "rover" do
-  version "1.0.0"
-  sha256 "REPLACE_WITH_SHA256_OF_Rover-1.0.0.zip"
+  version "1.1.1"
+  sha256 "d5c823ff1ae1021370434b3854b04558f8a55833dcf67c086d3c9077f16d5448"
 
   url "https://github.com/aluz123/rover/releases/download/v#{version}/Rover-#{version}.zip"
   name "Rover"
