@@ -411,6 +411,17 @@
   <span style="margin-left:auto;display:flex;gap:20px"><a href="#" data-repo>GitHub</a><a href="#" data-repo-path="/releases">Releases</a><a href="#" data-repo-path="/issues">Report a miss</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span>
 </div></footer>
 
+<dialog id="dl-note" style="max-width:440px;border:0;border-radius:18px;padding:26px;background:#1d1a33;color:#ece9ff;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 30px 80px rgba(0,0,0,.7);font:15px/1.6 var(--sans,system-ui)">
+  <h3 style="margin:0 0 6px;font-size:19px">Your download has started</h3>
+  <p style="margin:0 0 14px;color:#b9b4d6">Rover isn't notarized by Apple yet, so macOS asks once before opening it. It's safe, and the code is <a href="#" data-repo style="color:#ffa766">open source</a>.</p>
+  <ol style="margin:0 0 18px;padding-left:20px;color:#ece9ff">
+    <li>Unzip Rover and drag it into <b>Applications</b>.</li>
+    <li>Open it. When macOS says it can't check it, click <b>Done</b>.</li>
+    <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b>.</li>
+    <li>Press <b>⌥ Space</b>. You only do this once.</li>
+  </ol>
+  <form method="dialog" style="text-align:right;margin:0"><button class="btn btn-primary" style="border:0;cursor:pointer">Got it</button></form>
+</dialog>
 <script src="assets/data.js"></script>
 <script src="assets/ui.js"></script>
 <script src="assets/bot.js"></script>
@@ -419,7 +430,7 @@ const REPO = "https://github.com/aluz123/rover";
 const ZIP = REPO + "/releases/latest/download/Rover.zip";
 document.querySelectorAll("[data-repo]").forEach(a => a.href = REPO);
 document.querySelectorAll("[data-repo-path]").forEach(a => a.href = REPO + a.dataset.repoPath);
-document.querySelectorAll("[data-download]").forEach(a => a.href = ZIP);
+document.querySelectorAll("[data-download]").forEach(a => { a.href = ZIP; a.addEventListener("click", () => setTimeout(() => document.getElementById("dl-note").showModal(), 300)); });
 document.querySelectorAll("[data-repo-text]").forEach(s => s.textContent = REPO);
 fetch("https://api.github.com/repos/" + REPO.split("github.com/")[1]).then(r => r.ok ? r.json() : null).then(j => {
   if (j && j.stargazers_count > 0) document.querySelectorAll(".stars").forEach(s => s.textContent = "★ " + j.stargazers_count.toLocaleString());
