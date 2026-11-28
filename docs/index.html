@@ -35,7 +35,7 @@
   nav .wrap { display: flex; align-items: center; height: 64px; gap: 28px; }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 17px; letter-spacing: -.01em; text-decoration: none; }
   .brand img { width: 30px; height: 30px; border-radius: 8px; }
-  .navlinks { display: flex; gap: 26px; margin-left: auto; font-size: 14px; color: var(--ink-2); }
+  .navlinks { display: flex; align-items: center; gap: 26px; margin-left: auto; font-size: 14px; color: var(--ink-2); }
   .navlinks a { text-decoration: none; transition: color .2s; } .navlinks a:hover { color: var(--ink); }
   .btn { display: inline-flex; align-items: center; gap: 9px; height: 44px; padding: 0 20px; border-radius: 12px; font: 600 15px var(--display); text-decoration: none; letter-spacing: -.005em; transition: transform .2s, box-shadow .2s, background .2s; white-space: nowrap; }
   .btn:hover { transform: translateY(-1px); }
@@ -197,11 +197,18 @@
   .card .then { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
   @media (max-width: 900px) { .send-spot { grid-template-columns: minmax(0, 1fr); padding: 28px 20px; gap: 32px; } }
 
+  /* Rover Pro in the top bar and hero: visible, but quieter than Download */
+  .navlinks a.nav-pro { color: var(--orange-2); font-weight: 600; }
+  .navlinks a.nav-pro:hover { color: #ffb27d; }
+  .btn-pro-soft { color: var(--orange-2); background: rgba(255, 138, 61, .07); box-shadow: 0 0 0 1px rgba(255, 138, 61, .45) inset; }
+  .btn-pro-soft:hover { background: rgba(255, 138, 61, .13); }
+  .btn-pro-soft small { font-size: 12px; font-weight: 500; color: var(--ink-3); margin-left: 4px; }
+
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.2, .8, .2, 1), transform .9s cubic-bezier(.2, .8, .2, 1); }
   .reveal.in { opacity: 1; transform: none; }
 
   @media (max-width: 900px) {
-    .navlinks a:not(.btn) { display: none; }
+    .navlinks a:not(.btn):not(.nav-pro) { display: none; }
     .queries, .feats, .install { grid-template-columns: minmax(0, 1fr); } .feat.wide { grid-column: auto; }
     .speed, .meet { grid-template-columns: 1fr; gap: 36px; } .meet { padding: 32px; text-align: center; } .meet .bot { margin: 0 auto; width: 160px; height: 160px; }
     #demo { height: 470px; } #demo .rv-pv { display: none; } #demo .rv-hint:nth-child(n+4) { display: none; }
@@ -217,7 +224,7 @@
 <nav><div class="wrap">
   <a class="brand" href="#"><img src="assets/icon-64.png" alt="">Rover</a>
   <div class="navlinks">
-    <a href="#how">How it works</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    <a href="#how">How it works</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a class="nav-pro" href="/pro">Pro</a>
     <a class="btn btn-ghost btn-sm gh" href="#" data-repo>GitHub <span class="stars"></span></a>
   </div>
 </div></nav>
@@ -231,6 +238,7 @@
   <div class="ctas">
     <a class="btn btn-primary" href="#" data-download><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.3.8 1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1.1-2.8-4.2zM13.9 5.2c.7-.8 1.2-2 1-3.2-1 .1-2.3.7-3 1.5-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.4z"/></svg>Download for Mac</a>
     <a class="btn btn-ghost" href="#" data-repo><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>Star on GitHub</a>
+      <a class="btn btn-pro-soft" href="/pro">Rover Pro<small>$2.95 first month</small></a>
   </div>
   <div class="fine">macOS 13 or later<span>·</span>Apple silicon &amp; Intel<span>·</span>MIT License</div>
 
