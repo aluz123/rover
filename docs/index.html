@@ -171,6 +171,32 @@
   footer .wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
   footer a { text-decoration: none; } footer a:hover { color: var(--ink); }
 
+  /* Rover Pro: nav button, hero line, Send spotlight, highlighted pricing card */
+  .send-spot { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; margin-top: 8px; padding: 48px; border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .01)); box-shadow: 0 0 0 1px var(--line) inset; }
+  .send-spot h2 { margin-top: 0; text-align: left; } .send-spot .eyebrow { justify-content: flex-start; }
+  .send-spot ul { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 12px; color: var(--ink-2); font-size: 15.5px; line-height: 1.5; }
+  .send-spot li b { color: var(--ink); } .send-spot li::before { content: "→"; color: var(--orange); margin-right: 10px; }
+  .send-spot .ctas { justify-content: flex-start; margin-top: 28px; }
+  .send-spot .price { margin-top: 12px; font-size: 13px; color: var(--ink-3); }
+  .sharebox { background: #1d1a33; border-radius: 18px; padding: 22px; box-shadow: 0 0 0 1px var(--line-2), 0 30px 70px -30px rgba(0, 0, 0, .9); font-size: 13.5px; color: var(--ink-2); text-align: left; }
+  .sharebox .t { display: flex; gap: 12px; align-items: center; } .sharebox .t svg { flex: none; }
+  .sharebox .t b { display: block; color: var(--ink); font-size: 15px; } .sharebox .t span { font-size: 12px; color: var(--ink-3); }
+  .sharebox .to { margin-top: 16px; padding: 9px 10px; border-radius: 9px; background: rgba(255, 255, 255, .06); box-shadow: 0 0 0 1px var(--line) inset; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .sharebox .chip { background: rgba(255, 138, 61, .18); color: var(--ink); padding: 3px 10px; border-radius: 99px; font-size: 12.5px; }
+  .sharebox .chip i { font-style: normal; color: var(--orange); margin-right: 4px; }
+  .sharebox .seg { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px var(--line) inset; font-size: 12px; text-align: center; }
+  .sharebox .seg span { padding: 6px; } .sharebox .seg span:first-child { background: rgba(255, 255, 255, .1); color: var(--ink); }
+  .sharebox .go { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; } .sharebox .go span { padding: 6px 14px; border-radius: 8px; background: rgba(255, 255, 255, .07); font-size: 12.5px; }
+  .sharebox .go span:last-child { background: var(--orange); color: #1a0d05; font-weight: 600; }
+  .sharebox .prog { margin-top: 16px; height: 6px; border-radius: 99px; background: rgba(255, 255, 255, .08); overflow: hidden; } .sharebox .prog i { display: block; height: 100%; width: 64%; background: linear-gradient(90deg, var(--orange), #ffb27d); }
+  .sharebox .stat { margin-top: 8px; font-size: 12px; color: var(--ink-3); display: flex; justify-content: space-between; }
+  .card.pro-card { box-shadow: 0 0 0 1px rgba(255, 138, 61, .35) inset; }
+  .card .tier { font: 400 11px var(--pixel); letter-spacing: .1em; color: var(--ink-3); } .card.pro-card .tier { color: var(--orange-2); }
+  .card .amt { font-size: 40px; font-weight: 700; color: var(--ink); margin-top: 10px; letter-spacing: -.02em; } .card .amt small { font-size: 15px; font-weight: 500; color: var(--ink-3); margin-left: 6px; letter-spacing: 0; }
+  .card .then { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+  @media (max-width: 900px) { .send-spot { grid-template-columns: minmax(0, 1fr); padding: 28px 20px; gap: 32px; } }
+
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.2, .8, .2, 1), transform .9s cubic-bezier(.2, .8, .2, 1); }
   .reveal.in { opacity: 1; transform: none; }
 
@@ -191,7 +217,7 @@
 <nav><div class="wrap">
   <a class="brand" href="#"><img src="assets/icon-64.png" alt="">Rover</a>
   <div class="navlinks">
-    <a href="#film">Films</a><a href="#how">How it works</a><a href="#speed">Benchmark</a><a href="#features">Features</a><a href="#faq">FAQ</a><a href="#install">Install</a><a href="/pro">Pro</a>
+    <a href="#how">How it works</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
     <a class="btn btn-ghost btn-sm gh" href="#" data-repo>GitHub <span class="stars"></span></a>
   </div>
 </div></nav>
@@ -271,6 +297,30 @@
   </div>
 </div></section>
 
+<section id="send"><div class="wrap">
+  <div class="send-spot reveal">
+    <div>
+      <div class="eyebrow">ROVER PRO</div>
+      <h2>Need to send big files? <em>Pro does that too.</em></h2>
+      <ul>
+        <li><span><b>Type a name, press Send.</b> Your Gmail contacts and the people you've sent to before come up as you type.</span></li>
+        <li><span><b>Straight from your Mac to theirs.</b> No upload to wait for, no size limit, no 7-day expiry links.</span></li>
+        <li><span><b>Encrypted end to end,</b> and only the people you pick can open it. Picks up where it left off, even through a VPN.</span></li>
+      </ul>
+      <div class="ctas"><a class="btn btn-ghost" href="/pro">Learn about Rover Pro</a></div>
+      <div class="price">Optional · $2.95 the first month, then $9.95 a month</div>
+    </div>
+    <div class="sharebox" aria-hidden="true">
+      <div class="t"><svg width="26" height="26" viewBox="0 0 24 24" fill="#ff8a3d"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg><div><b>Send “Wedding Film 4K.mov”</b><span>48.6 GB · straight from your Mac, encrypted, no size limit</span></div></div>
+      <div class="to"><span class="chip"><i>✓</i>Maya Chen</span><span class="chip">sam@studio.co</span><span style="color:var(--ink-3);font-size:12.5px">Add people by name or email</span></div>
+      <div class="seg"><span>Only these people</span><span>Anyone with the link</span></div>
+      <div class="go"><span>Cancel</span><span>Send</span></div>
+      <div class="prog"><i></i></div>
+      <div class="stat"><span>Maya Chen · receiving</span><span>31.1 of 48.6 GB · 212 MB/s</span></div>
+    </div>
+  </div>
+</div></section>
+
 <section><div class="wrap">
   <div class="meet reveal">
     <div class="bot" id="bot-meet"></div>
@@ -279,6 +329,29 @@
       <h2>A little robot that <em>fetches</em> your files.</h2>
       <p class="sub">It lives in your menu bar, keeps an eye on every folder as files arrive, and wakes up the moment you press ⌥ Space. One magnifying-glass eye for finding things; the other one winks.</p>
     </div>
+  </div>
+</div></section>
+
+<section id="pricing"><div class="wrap">
+  <div class="eyebrow reveal">PRICING</div>
+  <h2 class="reveal">Free forever. <em>Pro from $2.95.</em></h2>
+  <div class="install">
+    <div class="card reveal"><div class="tier">ROVER</div><div class="amt">Free<small>forever</small></div><div class="then">Open source · MIT License</div><ol class="steps" style="margin-top:18px">
+      <li><span>Plain-English search, typos and dates, in about 2 ms</span></li>
+      <li><span>Quick Look, move, rename, Trash, all with ⌘Z undo</span></li>
+      <li><span>App launching, the assistant, automations</span></li>
+      <li><span>Receive files people send you</span></li>
+    </ol>
+    <div class="ctas" style="margin-top:20px;justify-content:flex-start"><a class="btn btn-primary" href="#" data-download>Download for Mac</a></div></div>
+    <div class="card pro-card reveal"><div class="tier">ROVER PRO</div><div class="amt">$2.95<small>first month</small></div><div class="then">then $9.95 a month · every Mac you own · cancel anytime</div><ol class="steps" style="margin-top:18px">
+      <li><span><b>Send huge files:</b> type a name, press Send. Mac to Mac, encrypted, no size limit</span></li>
+      <li><span><b>Free Up Space:</b> finds the old installers, copies and videos eating your disk</span></li>
+      <li><span><b>Search the text in screenshots:</b> “wifi password” finds the screenshot it's in</span></li>
+      <li><span><b>Find photos by what's in them:</b> “dog”, “beach”, “coffee receipt”</span></li>
+      <li><span><b>Search unplugged drives:</b> “wedding video” → it's on Backup Drive</span></li>
+      <li><span>Plus pinned files, your own shortcut and a monthly space checkup</span></li>
+    </ol>
+    <div class="ctas" style="margin-top:20px;justify-content:flex-start"><a class="btn btn-ghost" href="/pro">Get Rover Pro</a></div></div>
   </div>
 </div></section>
 
@@ -316,26 +389,6 @@
   </div>
 </div></section>
 
-<section id="pro"><div class="wrap">
-  <div class="eyebrow reveal">ROVER PRO</div>
-  <h2 class="reveal">Free forever. <em>Pro from $2.95.</em></h2>
-  <div class="install">
-    <div class="card reveal"><h3>Rover · Free</h3><ol class="steps">
-      <li><span>Plain-English search, typos and dates, in about 2 ms</span></li>
-      <li><span>Quick Look, move, rename, Trash, all with ⌘Z undo</span></li>
-      <li><span>App launching, the assistant, automations</span></li>
-    </ol></div>
-    <div class="card reveal"><h3>Rover Pro · $2.95 first month, then $9.95/mo</h3><ol class="steps">
-      <li><span><b>Send huge files:</b> type a name, press Send. Mac to Mac, encrypted, no size limit</span></li>
-      <li><span><b>Free Up Space:</b> finds the old installers, copies and videos eating your disk</span></li>
-      <li><span><b>Search the text in screenshots:</b> “wifi password” finds the screenshot it's in</span></li>
-      <li><span><b>Find photos by what's in them:</b> “dog”, “beach”, “coffee receipt”</span></li>
-      <li><span><b>Search unplugged drives:</b> “wedding video” → it's on Backup Drive</span></li>
-      <li><span>Plus pinned files, your own shortcut and a monthly space checkup</span></li>
-    </ol>
-    <div class="ctas" style="margin-top:20px;justify-content:flex-start"><a class="btn btn-primary" href="/pro">Get Rover Pro</a></div></div>
-  </div>
-</div></section>
 
 <section class="final"><div class="wrap">
   <div class="bot reveal" id="bot-final" style="width:96px;height:96px"></div>
